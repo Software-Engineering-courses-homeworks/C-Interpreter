@@ -204,6 +204,20 @@ static Token number() {
     return makeToken(TOKEN_NUMBER);
 }
 
+static Token number() {
+    while (isDigit(peek())) advance();
+
+    //Look for a fractional part.
+    if (peek() == '.' && isDigit(peekNext())) {
+        //consume the ".".
+        advance();
+
+    while (isDigit(peek()))advance();
+    }
+
+    return makeToken(TOKEN_NUMBER);
+}
+
 /// a function to handle the processing of strings
 /// @return returns a string token at the end of the string scanning
 static Token string() {
