@@ -59,7 +59,7 @@ static char* readFile(const char* path) {
 }
 
 /// the function gets a file path, reads it and interprets it
-/// @param path
+/// @param path 
 /// @return will returns exit code if there will be errors (65-for compilation error, 70-for runtime error)
 static char* runFile(const char* path) {
 
