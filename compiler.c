@@ -11,6 +11,10 @@ typedef struct {
 } Parser;
 
 Parser parser;
+
+/// prints the error message and toggles the flag
+/// @param token the offending token
+/// @param message the error message
 static void errorAt(Token* token, const char* message) {
     fprintf(stderr, "[line %d].Error", token->line);
 
@@ -22,8 +26,11 @@ static void errorAt(Token* token, const char* message) {
         fprintf(stderr, ": %s\n", message);
         parser.hadError = true;
     }
+
+    fprintf(stderr, ": %s\n", message);
+    parser.hadError = true;
 }
-void compile(const char *source) {
+
 /// throws an error at the last token consumed
 /// @param msg the error message
 static void error(const char *msg) {
@@ -38,8 +45,10 @@ static void errorAtCurrent(const char* msg) {
 
 /// primes the scanner for scanning the source code
 static void advance() {
+    //moves the parser one token ahead
     parser.previous = parser.current;
 
+    //iterates through all the initial errors and prints them
     for(;;) {
         parser.current = scanToken();
         if(parser.current.type != TOKEN_ERROR) break;
