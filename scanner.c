@@ -63,7 +63,7 @@ static char peekNext() {
 }
 
 /// the function receives a char and checks if the current char matches it
-/// @param expected the expected char in the sequence
+/// @param expected
 /// @return true if there is a match with expected, false if not
 static bool match(char expected) {
     //checks if we reached the end of the string
@@ -128,6 +128,33 @@ static void skipWhiteSpaces() {
                 return;
         }
     }
+}
+
+/// The function creates a token for identifier that includes numbers,letters and underscore
+/// @return a new token for identifier
+static Token identifier() {
+    while(isAlpha(peek()) || isDigit(peek()))advance();
+    return makeToken(identifierType());
+}
+
+/// The function returns a token type, if it's a saved keyword
+/// then a specific token will be returned. if it's not so an identifier token will be returned
+/// @return a token type for a saved keyword or TOKEN_IDENTIFIER for ones that are not
+static TokenType identifierType() {
+    switch(scanner.current[0]) {
+        case 'a': return checkKeyword(1,2,"nd",TOKEN_AND);
+        case 'c': return checkKeyword(1,4,"lass",TOKEN_CLASS);
+        case 'e': return checkKeyword(1,3,"lse",TOKEN_ELSE);
+        case 'i': return checkKeyword(1,1,"f",TOKEN_IF);
+        case 'n': return checkKeyword(1,2,"il",TOKEN_NIL);
+        case 'o': return checkKeyword(1,1,"r",TOKEN_OR);
+        case 'p': return checkKeyword(1,4,"rint",TOKEN_PRINT);
+        case 'r': return checkKeyword(1,5,"eturn",TOKEN_RETURN);
+        case 's': return checkKeyword(1,4,"uper",TOKEN_SUPER);
+        case 'v': return checkKeyword(1,2,"ar",TOKEN_VAR);
+        case 'w': return checkKeyword(1,4,"hile",TOKEN_WHILE);
+    }
+    return TOKEN_IDENTIFIER;
 }
 
 /// the function gets a lexeme from the scanner and checks if it's a keyword or an identifier and returns the approproate token type
