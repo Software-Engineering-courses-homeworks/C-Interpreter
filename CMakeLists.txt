@@ -13,4 +13,11 @@ add_executable(C_Interpeter
     debug.h
     main.c
     memory.c
-    memory.h)
+    memory.h
+        value.h
+        value.c
+        vm.h
+        vm.c
+        compiler.c
+        scanner.h
+        scanner.c)
