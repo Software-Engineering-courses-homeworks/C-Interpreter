@@ -116,11 +116,29 @@ static InterpretResult run()
 }
 
 /// interprets a given chunk to the VM and returns the interpreted result
-/// @param chunk
+/// @param source - the given source code
 /// @return the interpreted result of the given chunk(Need to change)
 InterpretResult interpret(const char* source)
 {
-    compile(source);
-    return INTERPRET_OK;
+    //creates a chunk and initializes it
+    Chunk chunk;
+    initChunk(&chunk);
+
+    //tries to compile the code and if it fails, return a compilation error
+    if(!compile(source, &chunk)) {
+        freeChunk(&chunk);
+        return INTERPRET_COMPILE_ERROR;
+    }
+
+    //initializes the VM chunk and IP
+    vm.chunk = &chunk;
+    vm.ip = vm.chunk->code;
+
+    //interprets the code
+    InterpretResult result = run();
+
+    //frees the allocated memory and returns the interpretation result
+    freeChunk(&chunk);
+    return result;
 }
 
