@@ -11,7 +11,19 @@ typedef struct {
 } Parser;
 
 Parser parser;
+static void errorAt(Token* token, const char* message) {
+    fprintf(stderr, "[line %d].Error", token->line);
 
+    if (token->type == TOKEN_EOF) {
+        fprintf(stderr, " at end");
+    } else if (token->type == TOKEN_ERROR) {
+        //Nothing.
+    }else {
+        fprintf(stderr, ": %s\n", message);
+        parser.hadError = true;
+    }
+}
+void compile(const char *source) {
 /// throws an error at the last token consumed
 /// @param msg the error message
 static void error(const char *msg) {
@@ -37,17 +49,35 @@ static void advance() {
 }
 
 /// compiles the source code
-/// @param source 
-/// @param chunk 
+/// @param source
+/// @param chunk
 /// @return returns whether the code had error in it
 bool compile(const char *source, Chunk* chunk) {
     //initializes the scanner with the source string
     initScanner(source);
 
-    //primes the compiler
-    advance();
-    expression();
-    consume(TOKEN_EOF, "Expected end of expression.");
+    //sets the line to -1
+    int line = -1;
 
-    return !parser.hadError;
+    //runs the scanner and generates tokens on the fly
+    for(;;) {
+        //scans the lexeme and saves the return token
+        Token token = scanToken();
+
+        //if the line is differnt then the last line printed, print is and update 'line'
+        //else, print a | to indicate it's the same line of code
+        if(token.line != line) {
+            printf("%4d ", token.line);
+            line = token.line;
+        }
+        else {
+            printf("    | ");
+        }
+        //prints the operation token
+        printf("%2d '%.*s'\n", token.type, token.length, token.start);
+
+        //stop the loop when reaching EOF
+        if(token.type == TOKEN_EOF)
+            break;
+    }
 }
