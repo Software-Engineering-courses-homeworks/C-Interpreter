@@ -159,6 +159,15 @@ static TokenType identifierType() {
         case 's': return checkKeyword(1,4,"uper",TOKEN_SUPER);
         case 'v': return checkKeyword(1,2,"ar",TOKEN_VAR);
         case 'w': return checkKeyword(1,4,"hile",TOKEN_WHILE);
+        case 'f':
+            if(scanner.current - scanner.start > 1) {
+                switch(scanner.current[1]) {
+                    case 'a': return checkKeyword(2,3,"lse",TOKEN_FALSE);
+                    case 'o': return checkKeyword(2,1,"r",TOKEN_FOR);
+                    case 'u': return checkKeyword(2,1,"n",TOKEN_FUN);
+                }
+            }
+            break;
     }
     return TOKEN_IDENTIFIER;
 }
