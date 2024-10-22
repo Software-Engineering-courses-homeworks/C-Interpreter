@@ -129,13 +129,19 @@ static void skipWhiteSpaces() {
         }
     }
 }
-
-/// The function creates a token for identifier that includes numbers,letters and underscore
-/// @return a new token for identifier
-static Token identifier() {
-    while(isAlpha(peek()) || isDigit(peek()))advance();
-    return makeToken(identifierType());
+/// the function gets a lexeme from the scanner and checks if it's a keyword or an identifier and returns the approproate token type
+/// @param start  - the start of the word
+/// @param length - the length of the keyword we want to compare the scanned word to
+/// @param rest - the rest of the keyword
+/// @param type - the type of the keyword, represented with it's TokenType
+/// @return returns the keyword token type or an identifier token type
+static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
+    if(scanner.current - scanner.start == start + length && memcmp(scanner.start + start, rest, length) == 0) {
+        return type;
+    }
+    return TOKEN_IDENTIFIER;
 }
+
 
 /// The function returns a token type, if it's a saved keyword
 /// then a specific token will be returned. if it's not so an identifier token will be returned
@@ -157,18 +163,11 @@ static TokenType identifierType() {
     return TOKEN_IDENTIFIER;
 }
 
-/// the function gets a lexeme from the scanner and checks if it's a keyword or an identifier and returns the approproate token type
-/// @param start  - the start of the word
-/// @param length - the length of the keyword we want to compare the scanned word to
-/// @param rest - the rest of the keyword
-/// @param type - the type of the keyword, represented with it's TokenType
-/// @return returns the keyword token type or an identifier token type
-static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
-    if(scanner.current - scanner.start == start + length && memcmp(scanner.start + start, rest, length) == 0) {
-        return type;
-    }
-
-    return TOKEN_IDENTIFIER;
+/// The function creates a token for identifier that includes numbers,letters and underscore
+/// @return a new token for identifier
+static Token identifier() {
+    while(isAlpha(peek()) || isDigit(peek()))advance();
+    return makeToken(identifierType());
 }
 
 /// the function makes a new token for the next number that appears
