@@ -21,6 +21,13 @@ void initScanner(const char* source) {
     scanner.line = 1;
 }
 
+/// the function determines whether the character given is a letter or an underscore to determine if it's an identifier
+/// @param c - a char that was scanned from the source code
+/// @return TRUE: the character is a letter or an underscore, FALSE: else
+static bool isAlpha(char c) {
+    return (c >= 'a' && c <='z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
+
 /// the function gets a character and returns whether it's a digit or not
 /// @param c the current character in the lexeme
 /// @return TRUE - if c is a digit, FALSE - if C isn't a number
@@ -56,7 +63,7 @@ static char peekNext() {
 }
 
 /// the function receives a char and checks if the current char matches it
-/// @param expected
+/// @param expected the expected char in the sequence
 /// @return true if there is a match with expected, false if not
 static bool match(char expected) {
     //checks if we reached the end of the string
@@ -121,6 +128,20 @@ static void skipWhiteSpaces() {
                 return;
         }
     }
+}
+
+/// the function gets a lexeme from the scanner and checks if it's a keyword or an identifier and returns the approproate token type
+/// @param start  - the start of the word
+/// @param length - the length of the keyword we want to compare the scanned word to
+/// @param rest - the rest of the keyword
+/// @param type - the type of the keyword, represented with it's TokenType
+/// @return returns the keyword token type or an identifier token type
+static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
+    if(scanner.current - scanner.start == start + length && memcmp(scanner.start + start, rest, length) == 0) {
+        return type;
+    }
+
+    return TOKEN_IDENTIFIER;
 }
 
 /// the function makes a new token for the next number that appears
