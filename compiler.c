@@ -3,6 +3,13 @@
 #include "compiler.h"
 #include "scanner.h"
 
+typedef struct {
+    Token current;
+    Token previous;
+} Parser;
+
+Parser parser;
+
 void compile(const char *source) {
     //initializes the scanner with the source string
     initScanner(source);
