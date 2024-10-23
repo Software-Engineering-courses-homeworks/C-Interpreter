@@ -115,6 +115,12 @@ static void expression() {
 
 
 
+/// call expression to compile what inside the parentheses, and then parse the closing
+static void grouping() {
+    expression();
+    consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression.");
+}
+
 /// compiles the source code
 /// @param source - the source code that needs to be compiled
 /// @param chunk - the bytecode chunk we feed teh tokenized source code to
