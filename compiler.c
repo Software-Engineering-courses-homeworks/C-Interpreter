@@ -144,9 +144,7 @@ static void emitConstant(Value value) {
         // //splits the constant index into 3 bytes and writes them in a little endian style
         emitBytes(OP_CONSTANT_LONG,constant);
         emitBytes(constant >> 8, constant >> 16);
-
     }
-    writeConstant(currentChunk(), value, parser.previous.line);
 }
 
 /// ends the compilation of the chunk
@@ -160,9 +158,15 @@ static void number() {
     emitConstant(value);
 }
 
+/// 
+/// @param precedence 
+static void parsePrecedence(Precedence precedence) {
+    ///
+}
+
 ///
 static void expression() {
-
+    parsePrecedence(PREC_ASSIGNMENT);
 }
 
 /// evaluates the value in the expression and then negates it
@@ -170,18 +174,13 @@ static void unary() {
     TokenType operatorType = parser.current.type;
 
     //Compile the operand.
-    expression();
+    parsePrecedence(PREC_UNARY);
 
     //Emit the operator instruction
     switch (operatorType) {
         case TOKEN_MINUS: emitByte(OP_NEGATE); break;
         default: return; //Unreachable.
     }
-}
-
-///
-static void parsePrecedence(Precedence precedence) {
-    ///
 }
 
 /// call expression to compile what inside the parentheses, and then parse the closing
