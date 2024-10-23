@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "common.h"
 #include "compiler.h"
 #include "scanner.h"
@@ -11,11 +12,22 @@ typedef struct {
 } Parser;
 
 Parser parser;
+Chunk* compilingChunk;
+
+/// a standard getter function
+/// @return a pointer to the current chunk being compiled
+static Chunk* currentChunk() {
+    return compilingChunk;
+}
 
 /// prints the error message and toggles the flag
-/// @param token the offending token
-/// @param message the error message
+/// @param token - the offending token
+/// @param message - the error message
 static void errorAt(Token* token, const char* message) {
+    if(parser.panicMode) return;
+
+    parser.panicMode = true;
+
     fprintf(stderr, "[line %d].Error", token->line);
 
     if (token->type == TOKEN_EOF) {
@@ -59,8 +71,8 @@ static void advance() {
     }
 }
 
-/// The function reads the next token, and checks if matches to the type that was recived
-/// if not, reported the erorr
+/// The function reads the next token, and checks if matches to the type that was received
+/// if not, reported the error
 /// @param type
 /// @param message
 static void consume(TokenType type, const char* message) {
@@ -72,17 +84,50 @@ static void consume(TokenType type, const char* message) {
     errorAtCurrent(message);
 }
 
+/// appends the given instruction byte to the chunk with the relevant line
+/// @param byte - the byte that needs appending
+static void emitByte(uint8_t byte) {
+    writeChunk(currentChunk(), byte, parser.previous.line);
+}
+
+/// a function that writes 2 bytes at once for ease of implementation
+/// @param byte1 - the opcode byte
+/// @param byte2 - the operand byte
+static void emitBytes(uint8_t byte1, uint8_t byte2) {
+    emitByte(byte1);
+    emitByte(byte2);
+}
+
+/// emits a return instruction to the bytecode
+static void emitReturn() {
+    emitByte(OP_RETURN);
+}
+
+/// ends the compilation of the chunk
+static void endCompiler() {
+    emitReturn();
+}
+
 /// compiles the source code
-/// @param source
-/// @param chunk
+/// @param source - the source code that needs to be compiled
+/// @param chunk - the bytecode chunk we feed teh tokenized source code to
 /// @return returns whether the code had error in it
 bool compile(const char *source, Chunk* chunk) {
     //initializes the scanner with the source string
     ///TO BE RECORDED
     initScanner(source);
+
+    //initializes the compiling chunk
+    compilingChunk = chunk;
+
+    //initializes the parser
+    parser.hadError = false;
+    parser.panicMode = false;
+
     advance();
     expression();
     consume(TOKEN_EOF,"Expect end of expression");
 
-   return !parser.hadError;
+    endCompiler();
+    return !parser.hadError;
 }
