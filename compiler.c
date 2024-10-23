@@ -59,6 +59,19 @@ static void advance() {
     }
 }
 
+/// The function reads the next token, and checks if matches to the type that was recived
+/// if not, reported the erorr
+/// @param type
+/// @param message
+static void consume(TokenType type, const char* message) {
+    if (parser.current.type == type) {
+        advance();
+        return;
+    }
+
+    errorAtCurrent(message);
+}
+
 /// compiles the source code
 /// @param source
 /// @param chunk
