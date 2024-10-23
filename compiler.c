@@ -117,20 +117,35 @@ static void emitReturn() {
     emitByte(OP_RETURN);
 }
 
-static uint8_t makeConstant(Value value) {
+static uint32_t makeConstant(Value value) {
     int constant = addConstant(currentChunk(), value);
 
-    if(constant > UINT8_MAX) {
+    if (constant > UINT24_MAX) {
         error("Too many constants in one chunk.");
         return 0;
     }
 
-    return (uint8_t)constant;
+    return (uint32_t)constant;
 }
 
 /// emits the constant byteCode to the chunk using the writeConstant function because of extended functionality
 /// @param value - the value that needs appending
 static void emitConstant(Value value) {
+    uint32_t constant = makeConstant(value);
+
+    if(constant <= UINT8_MAX)
+    {
+        emitBytes(OP_CONSTANT,constant);
+    }
+    //if the constant can't fit in an uint8_t, add it to the chunk using the OP_CONSTANT_LONG opcode
+    else if(constant <= UINT24_MAX)
+    {
+        // //writes the instruction opcode to the chunk
+        // //splits the constant index into 3 bytes and writes them in a little endian style
+        emitBytes(OP_CONSTANT_LONG,constant);
+        emitBytes(constant >> 8, constant >> 16);
+
+    }
     writeConstant(currentChunk(), value, parser.previous.line);
 }
 
