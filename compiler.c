@@ -103,9 +103,32 @@ static void emitReturn() {
     emitByte(OP_RETURN);
 }
 
+static uint8_t makeConstant(Value value) {
+    int constant = addConstant(currentChunk(), value);
+
+    if(constant > UINT8_MAX) {
+        error("Too many constants in one chunk.");
+        return 0;
+    }
+
+    return (uint8_t)constant;
+}
+
+/// emits the constant byteCode to the chunk using the writeConstant function because of extended functionality
+/// @param value - the value that needs appending
+static void emitConstant(Value value) {
+    writeConstant(currentChunk(), value, parser.previous.line);
+}
+
 /// ends the compilation of the chunk
 static void endCompiler() {
     emitReturn();
+}
+
+/// converts the token value to a double that we can append to the bytecode chunk
+static void number() {
+    double value = strtod(parser.current.start, NULL);
+    emitConstant(value);
 }
 
 ///

@@ -89,7 +89,7 @@ void writeConstant(Chunk* chunk, Value value, int line)
         writeChunk(chunk,constant, line);
     }
     //if the constant can't fit in an uint8_t, add it to the chunk using the OP_CONSTANT_LONG opcode
-    else
+    else if(constant <= UINT24_MAX)
     {
         //writes the instruction opcode to the chunk
         writeChunk(chunk, OP_CONSTANT_LONG, line);
