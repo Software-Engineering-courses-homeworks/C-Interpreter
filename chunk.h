@@ -50,9 +50,4 @@ void freeChunk(Chunk* chunk);
 /// @returns the index of the appended constant in the pool
 int addConstant(Chunk* chunk, Value value);
 
-/// 
-/// @param chunk 
-/// @param value 
-/// @param line 
-void writeConstant(Chunk* chunk, Value value, int line);
 #endif
