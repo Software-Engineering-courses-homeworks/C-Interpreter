@@ -182,8 +182,9 @@ static void number() {
     emitConstant(value);
 }
 
-/// parses the code given the precedence in the operation order using the parsing rules
-/// @param precedence the current precedence for the operation
+/// The function recives a precedence level and parses expresssions that have an operator precedence
+/// //equals or higher than the provieded one
+/// @param precedence
 static void parsePrecedence(Precedence precedence) {
     ///
 }
