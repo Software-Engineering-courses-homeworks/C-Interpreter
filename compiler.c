@@ -152,16 +152,32 @@ static void endCompiler() {
     emitReturn();
 }
 
+
 /// converts the token value to a double that we can append to the bytecode chunk
 static void number() {
     double value = strtod(parser.current.start, NULL);
     emitConstant(value);
 }
 
-/// 
-/// @param precedence 
+///
+/// @param precedence
 static void parsePrecedence(Precedence precedence) {
     ///
+}
+
+/// handles the rest of the arithmetic operators. emits the byte code of the instruction
+static void binary() {
+    TokenType operatorType = parser.previous.type;
+    ParseRule* rule = getRule(operatorType);
+    parsePrecedence((Precedence)rule->precedence + 1);
+
+    switch (operatorType) {
+        case TOKEN_PLUS: emitByte(OP_ADD); break;
+        case TOKEN_MINUS: emitByte(OP_SUBTRACT); break;
+        case TOKEN_STAR: emitByte(OP_MULTIPLY); break;
+        case TOKEN_SLASH: emitByte(OP_DIVIDE); break;
+        default: return; //Unreachable
+    }
 }
 
 ///
