@@ -182,8 +182,8 @@ static void number() {
     emitConstant(value);
 }
 
-/// The function recives a precedence level and parses expresssions that have an operator precedence
-/// //equals or higher than the provieded one
+/// The function receives a precedence level and parses expressions that have an operator precedence
+/// //equals or higher than the provided one
 /// @param precedence
 static void parsePrecedence(Precedence precedence) {
     ///
