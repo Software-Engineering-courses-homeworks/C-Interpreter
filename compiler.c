@@ -160,6 +160,9 @@ static void endCompiler() {
     emitReturn();
 }
 
+static void expression();
+static ParseRule* getRule(TokenType type);
+static void parsePrecedence(Precedence precedence);
 
 /// converts the token value to a double that we can append to the bytecode chunk
 static void number() {
@@ -172,6 +175,7 @@ static void number() {
 static void parsePrecedence(Precedence precedence) {
     ///
 }
+
 
 /// handles the rest of the arithmetic operators. emits the byte code of the instruction
 static void binary() {
@@ -255,6 +259,10 @@ ParseRule rules[] = {
   [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
 };
+
+static ParseRule* getRule(TokenType type) {
+    return &rules[type];
+}
 
 /// compiles the source code
 /// @param source - the source code that needs to be compiled
