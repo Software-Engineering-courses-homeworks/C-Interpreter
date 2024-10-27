@@ -2,7 +2,13 @@
 #include <stdlib.h>
 #include "common.h"
 #include "compiler.h"
+
+#include "debug.h"
 #include "scanner.h"
+
+#ifdef DEBUG_PRINT_CODE
+#include "debug.h"
+#endif
 
 typedef struct {
     Token current;
@@ -158,6 +164,12 @@ static void emitConstant(Value value) {
 /// ends the compilation of the chunk
 static void endCompiler() {
     emitReturn();
+
+#ifdef DEBUG_PRINT_CODE
+    if(!parser.hadError) {
+        disassembleChunk(currentChunk(), "code");
+    }
+#endif
 }
 
 static void expression();
@@ -170,8 +182,8 @@ static void number() {
     emitConstant(value);
 }
 
-///
-/// @param precedence
+/// parses the code given the precedence in the operation order using the parsing rules
+/// @param precedence the current precedence for the operation
 static void parsePrecedence(Precedence precedence) {
     ///
 }
