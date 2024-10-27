@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.29)
-project(C_Interpeter C)
+project(C_Interpreter C)
 
 set(CMAKE_C_STANDARD 11)
 
