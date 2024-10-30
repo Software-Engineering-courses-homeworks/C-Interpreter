@@ -61,4 +61,5 @@ bool valuesEqual(Value a, Value b) {
         case VAL_NIL:       return true;
         case VAL_NUMBER:    return AS_NUMBER(a) == AS_NUMBER(b);
         default:            return false;//unreachable
+    }
 }
