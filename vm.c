@@ -74,16 +74,16 @@ static InterpretResult run()
 #define READ_CONSTANT_LONG(arr)  (vm.chunk->constants.values[(uint32_t)arr[2] << 16 | (uint16_t)arr[1] << 8 | arr[0]])
 
 //a macro to perform binary operations
-#define BINARY_OP(valuetype, op) \
-    do { \
-        if(!IS_NUMBER(peek(0)|| !IS_NUMBER(peek(1)) { \
-            runtimeError("Operands must be numbers."); \
-            return INTERPRET_RUNTIME_ERROR; \
-        } \
-        double b = AS_NUMBER(pop()); \
-        double a = AS_NUMBER(pop()); \
-        push (valuetype(a op b)); \
-        }while(false)
+#define BINARY_OP(valueType, op) \
+do { \
+    if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
+        runtimeError("Operands must be numbers."); \
+        return INTERPRET_RUNTIME_ERROR; \
+    } \
+    double b = AS_NUMBER(pop()); \
+    double a = AS_NUMBER(pop()); \
+    push(valueType(a op b)); \
+} while (false)
 
 //a check for a debug flag that if present prints the trace
 #ifdef DEBUG_TRACE_EXECUTION
@@ -112,7 +112,7 @@ static InterpretResult run()
                     runtimeError("Opernad must be a number.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                push(NUMBER_VAL(-AS_NUMBER(pop)()));
+                push(NUMBER_VAL(-AS_NUMBER(pop())));
                 break;
             //case for a runtime result that pops the stacks.
             case OP_RETURN:
@@ -142,10 +142,10 @@ static InterpretResult run()
                 break;
             }
             //cases for arithmetic operations
-            case OP_ADD: BINARY_OP(+); break;
-            case OP_SUBTRACT: BINARY_OP(-); break;
-            case OP_MULTIPLY: BINARY_OP(*); break;
-            case OP_DIVIDE: BINARY_OP(/); break;
+            case OP_ADD: BINARY_OP(NUMBER_VAL, +); break;
+            case OP_SUBTRACT: BINARY_OP(NUMBER_VAL, -); break;
+            case OP_MULTIPLY: BINARY_OP(NUMBER_VAL,*); break;
+            case OP_DIVIDE: BINARY_OP(NUMBER_VAL, /); break;
         }
     }
 #undef READ_BYTE
