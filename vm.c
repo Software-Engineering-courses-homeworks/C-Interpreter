@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include "common.h"
 #include "vm.h"
 #include "debug.h"
@@ -7,6 +8,28 @@ VM vm;
 
 static void resetStack() {
     vm.stackTop = vm.stack;
+}
+
+///  prints the line where the script had a runtime error
+/// @param format
+/// @param ...
+static void runtimeError(const char* format, ...) {
+    va_list args;
+    va_start(args, format);     ///initalize the argument list starting after 'format'.
+
+    //Print the formatted error message to standartd error output.
+    vfprintf(stderr, format, args);
+    va_end(args);///clean up the argument list
+
+    //prints a new line to separate the error message
+    fputs("\n", stderr);
+
+    size_t instruction = vm.ip - vm.chunk->code -1;
+    int line = vm.chunk->lines[instruction];
+
+    //prints the line number where the error occured
+    fprintf(stderr, "[line %d] in script \n", line);
+    resetStack();
 }
 
 /// initializes the VM
@@ -33,6 +56,13 @@ void push(Value val) {
 Value pop() {
     vm.stackTop--;
     return *vm.stackTop;
+}
+
+///
+/// @param distance - how far down from the top to look
+/// @return returns a value from the stack without popping it
+static Value peek(int distance) {
+    return vm.stackTop[-1-distance];
 }
 
 /// a helper function that executes the bytecode by iterating through the chunk one bytecode at a time
@@ -77,7 +107,12 @@ static InterpretResult run()
         {
             //the case negates the value in the top of the stacks and pushes it back in
             case OP_NEGATE:
-                push(-pop());
+                //cheks if the value on the top of the stack is a number
+                if (!IS_NUMBER(peek(0))) {
+                    runtimeError("Opernad must be a number.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                push(NUMBER_VAL(-AS_NUMBER(pop)()));
                 break;
             //case for a runtime result that pops the stacks.
             case OP_RETURN:
