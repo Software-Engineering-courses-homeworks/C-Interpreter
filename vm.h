@@ -26,7 +26,6 @@ void initVM();
 void freeVM();
 
 /// interprets a given chunk to the VM and returns the interpreted result
-/// @param chunk
 /// @return the interpreted result of the given chunk(need to change)
 InterpretResult interpret(const char* source);
 

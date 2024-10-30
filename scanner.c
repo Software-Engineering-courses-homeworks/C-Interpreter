@@ -136,9 +136,10 @@ static void skipWhiteSpaces() {
 /// @param type - the type of the keyword, represented with it's TokenType
 /// @return returns the keyword token type or an identifier token type
 static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
-    if(scanner.current - scanner.start == start + length && memcmp(scanner.start + start, rest, length) == 0) {
+    if (scanner.current - scanner.start == start + length && memcmp(scanner.start + start, rest, length) == 0) {
         return type;
     }
+
     return TOKEN_IDENTIFIER;
 }
 
@@ -147,7 +148,7 @@ static TokenType checkKeyword(int start, int length, const char* rest, TokenType
 /// then a specific token will be returned. if it's not so an identifier token will be returned
 /// @return a token type for a saved keyword or TOKEN_IDENTIFIER for ones that are not
 static TokenType identifierType() {
-    switch(scanner.current[0]) {
+    switch(scanner.start[0]) {
         case 'a': return checkKeyword(1,2,"nd",TOKEN_AND);
         case 'c': return checkKeyword(1,4,"lass",TOKEN_CLASS);
         case 'e': return checkKeyword(1,3,"lse",TOKEN_ELSE);
@@ -235,6 +236,9 @@ Token scanToken() {
 
     //saves the first character in the lexeme to c
     char c = advance();
+
+    //if c is a char, check if it's an identifier
+    if (isAlpha(c)) return identifier();
 
     //if c is a number, turn it into one
     if(isDigit(c)) return number();
