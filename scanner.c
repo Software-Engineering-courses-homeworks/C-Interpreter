@@ -129,7 +129,7 @@ static void skipWhiteSpaces() {
         }
     }
 }
-/// the function gets a lexeme from the scanner and checks if it's a keyword or an identifier and returns the approproate token type
+/// the function gets a lexeme from the scanner and checks if it's a keyword or an identifier and returns the appropriate token type
 /// @param start  - the start of the word
 /// @param length - the length of the keyword we want to compare the scanned word to
 /// @param rest - the rest of the keyword

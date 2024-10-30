@@ -49,10 +49,10 @@ void printValue(Value value)
     }
 }
 
-/// the function checks if the two values that were recived are the same
+/// the function checks if the two values that were received are the same
 /// @param a
 /// @param b
-/// @return true - the values are the same. false- not the same
+/// @return true - the values are the same. false - not the same
 bool valuesEqual(Value a, Value b) {
     //if the values don't have the same type, so return false
     if (a.type != b.type) return false;
