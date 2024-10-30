@@ -218,7 +218,17 @@ static void binary() {
     }
 }
 
-///
+/// a function to load the bytecode for boolean and nil values
+static void literal() {
+    switch(parser.previous.type) {
+        case TOKEN_FALSE: emitByte(OP_FALSE); break;
+        case TOKEN_TRUE: emitByte(OP_TRUE); break;
+        case TOKEN_NIL: emitByte(OP_NIL); break;
+        default: return;
+    }
+}
+
+///reads an expression and compiles it
 static void expression() {
     parsePrecedence(PREC_ASSIGNMENT);
 }
@@ -286,6 +296,9 @@ ParseRule rules[] = {
   [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
 };
 
+/// a wrapper function that returns the precedence rule for a token type
+/// @param type - the token type whose precedence needs to be checked
+/// @return returns the parse rule for that token type
 static ParseRule* getRule(TokenType type) {
     return &rules[type];
 }
