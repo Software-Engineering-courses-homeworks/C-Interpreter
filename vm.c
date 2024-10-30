@@ -65,6 +65,13 @@ static Value peek(int distance) {
     return vm.stackTop[-1-distance];
 }
 
+/// the function gets a value and returns whether it is a nil or false value or not
+/// @param val the value that needs to be checked
+/// @return returns true for either nil or false, false otherwise
+static bool isFalsey(Value val) {
+    return IS_NIL(val) || (IS_BOOL(val) && !AS_BOOL(val));
+}
+
 /// a helper function that executes the bytecode by iterating through the chunk one bytecode at a time
 /// @return returns an interpreted result
 static InterpretResult run()
