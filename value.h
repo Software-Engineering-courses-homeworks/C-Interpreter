@@ -36,6 +36,9 @@ typedef struct {
     Value* values;
 } ValueArray;
 
+///returns if the two values are the same
+bool valuesEqual(Value a, Value b);
+
 ///initializes a wrapper ValueArray for the interpreter
 /// @param array
 void initValueArray(ValueArray* array);

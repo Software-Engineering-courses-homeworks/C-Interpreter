@@ -48,3 +48,17 @@ void printValue(Value value)
         case VAL_NUMBER: printf("%g", AS_NUMBER(value)); break;
     }
 }
+
+/// the function checks if the two values that were recived are the same
+/// @param a
+/// @param b
+/// @return true - the values are the same. false- not the same
+bool valuesEqual(Value a, Value b) {
+    //if the values don't have the same type, so return false
+    if (a.type != b.type) return false;
+    switch (a.type) {
+        case VAL_BOOL:      return AS_BOOL(a) == AS_BOOL(b);
+        case VAL_NIL:       return true;
+        case VAL_NUMBER:    return AS_NUMBER(a) == AS_NUMBER(b);
+        default:            return false;//unreachable
+}

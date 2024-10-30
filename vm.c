@@ -152,6 +152,13 @@ do { \
             case OP_NIL: push(NIL_VAL); break;
             case OP_TRUE:push(BOOL_VAL(true));break;
             case OP_FALSE:push(BOOL_VAL(false));break;
+            //case for equality
+            case OP_EQUAL: {
+                Value b = pop();
+                Value a = pop();
+                push(BOOL_VAL(valuesEqual(a,b)));
+                break;
+            }
             //cases for arithmetic operations
             case OP_ADD: BINARY_OP(NUMBER_VAL, +); break;
             case OP_SUBTRACT: BINARY_OP(NUMBER_VAL, -); break;
