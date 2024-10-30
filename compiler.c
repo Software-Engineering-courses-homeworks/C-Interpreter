@@ -179,7 +179,7 @@ static void parsePrecedence(Precedence precedence);
 /// converts the token value to a double that we can append to the bytecode chunk
 static void number() {
     double value = strtod(parser.current.start, NULL);
-    emitConstant(value);
+    emitConstant(NUMBER_VAL(value));
 }
 
 /// The function receives a precedence level and parses expressions that have an operator precedence
