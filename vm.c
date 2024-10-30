@@ -17,7 +17,7 @@ static void runtimeError(const char* format, ...) {
     va_list args;
     va_start(args, format);     ///initalize the argument list starting after 'format'.
 
-    //Print the formatted error message to standartd error output.
+    //Print the formatted error message to standard error output.
     vfprintf(stderr, format, args);
     va_end(args);///clean up the argument list
 
@@ -27,7 +27,7 @@ static void runtimeError(const char* format, ...) {
     size_t instruction = vm.ip - vm.chunk->code -1;
     int line = vm.chunk->lines[instruction];
 
-    //prints the line number where the error occured
+    //prints the line number where the error occurred
     fprintf(stderr, "[line %d] in script \n", line);
     resetStack();
 }
@@ -107,9 +107,9 @@ do { \
         {
             //the case negates the value in the top of the stacks and pushes it back in
             case OP_NEGATE:
-                //cheks if the value on the top of the stack is a number
+                //checks if the value on the top of the stack is a number
                 if (!IS_NUMBER(peek(0))) {
-                    runtimeError("Opernad must be a number.");
+                    runtimeError("Operand must be a number.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 push(NUMBER_VAL(-AS_NUMBER(pop())));
