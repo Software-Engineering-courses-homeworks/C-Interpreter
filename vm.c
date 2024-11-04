@@ -45,7 +45,7 @@ void initVM()
 /// frees the VM
 void freeVM()
 {
-
+    freeObjects();
 }
 
 /// pushes a value onto the VM stack

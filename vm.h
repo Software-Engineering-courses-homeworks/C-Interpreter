@@ -20,6 +20,8 @@ typedef enum {
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
+extern VM vm;
+
 /// initializes the VM
 void initVM();
 
