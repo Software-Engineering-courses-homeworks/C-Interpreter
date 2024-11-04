@@ -47,3 +47,11 @@ ObjString* copyString(const char* chars, int length) {
 
     return allocateString(heapChars,length);
 }
+
+/// prints the given Obj value according to it's type
+/// @param value an Obj value pointer from the stack
+void printObject(Value value) {
+    switch (OBJ_TYPE(value)) {
+        case OBJ_STRING: printf("%s", AS_STRING(value)); break;
+    }
+}
