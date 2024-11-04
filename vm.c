@@ -39,6 +39,7 @@ static void runtimeError(const char* format, ...) {
 void initVM()
 {
     resetStack();
+    vm.objects = NULL;
 }
 
 /// frees the VM
