@@ -30,6 +30,14 @@ static Obj* allocateString(char* chars, int length) {
     return string;
 }
 
+/// The function recieves an array of characters and a length, and returns a new string from the array
+/// @param chars
+/// @param length
+/// @return a new string
+ObjString* takeString(char* chars, int length) {
+    return allocateString(chars, length);
+}
+
 /// The function copies a string from a given character array into a new allocated memory location
 /// @param chars
 /// @param length
