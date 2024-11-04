@@ -2,11 +2,11 @@
 
 #include "memory.h"
 
-/// @brief 
-/// @param pointer - a pointer to the block of memory we want to reallocate
-/// @param oldSize - the old size of the allocation
-/// @param newSize - the new size of the allocation
-/// @return 
+/// @brief reallocates memory dynamically using the info given by the macros calling it and realloc
+/// @param pointer a pointer to the dynamically allocated array
+/// @param oldSize the old size of the array that's used to determine what the new size for the allocation should be
+/// @param newSize the new allocation size
+/// @return returns an abstract pointer to the reallocated array
 void* reallocate(void* pointer, size_t oldSize, size_t newSize)
 {
     //if the new size is zero, then free the memory
