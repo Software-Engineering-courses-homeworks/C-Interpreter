@@ -91,6 +91,7 @@ static Token makeToken(TokenType type) {
 /// @return an errorToken
 static Token errorToken(const char* message) {
     Token token;
+    token.type = TOKEN_ERROR;
     token.start = message;
     token.length = (int)(strlen(message));
     token.line = scanner.line;
@@ -117,18 +118,19 @@ static void skipWhiteSpaces() {
                 advance();
                 break;
             case '/':
-                if(peekNext() == '/') {
-                    //runs until the end of the comment line
-                    while(peek() != '\n' && !isAtEnd()) advance();
-                }
-                else
+                if (peekNext() == '/') {
+                    // A comment goes until the end of the line.
+                    while (peek() != '\n' && !isAtEnd()) advance();
+                } else {
                     return;
+                }
                 break;
             default:
                 return;
         }
     }
 }
+
 /// the function gets a lexeme from the scanner and checks if it's a keyword or an identifier and returns the appropriate token type
 /// @param start  - the start of the word
 /// @param length - the length of the keyword we want to compare the scanned word to
