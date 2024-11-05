@@ -235,7 +235,15 @@ static uint8_t identifierConstant(Token* name) {
 /// @param name the name of the variable
 static void namedVariable(Token name) {
     uint8_t arg = identifierConstant(&name);
-    emitBytes(OP_GET_GLOBAL, arg);
+
+    //if there is an equals sign after the identifier we compile the assige value
+    if (match(TOKEN_EQUAL)) {
+        expression();
+        emitBytes(OP_SET_GLOBAL,arg);
+    }
+    else {
+        emitBytes(OP_GET_GLOBAL,arg);;
+    }
 }
 
 /// allows for the referencing of variables
