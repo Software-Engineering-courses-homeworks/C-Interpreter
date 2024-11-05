@@ -188,7 +188,7 @@ static void string() {
 
 /// The function receives a precedence level and parses expressions that have an operator precedence
 /// //equals or higher than the provided one
-/// @param precedence
+/// @param precedence the current precedence
 static void parsePrecedence(Precedence precedence) {
     advance();
     ParseFn prefixRule = getRule(parser.previous.type)->prefix;
@@ -205,7 +205,6 @@ static void parsePrecedence(Precedence precedence) {
         infixRule();
     }
 }
-
 
 /// handles the rest of the arithmetic operators. emits the byte code of the instruction
 static void binary() {
@@ -320,7 +319,6 @@ static ParseRule* getRule(TokenType type) {
 /// @return returns whether the code had error in it
 bool compile(const char *source, Chunk* chunk) {
     //initializes the scanner with the source string
-    ///TO BE RECORDED
     initScanner(source);
 
     //initializes the compiling chunk

@@ -104,13 +104,13 @@ static InterpretResult run()
 //a macro to perform binary operations
 #define BINARY_OP(valueType, op) \
 do { \
-    if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
-        runtimeError("Operands must be numbers."); \
-        return INTERPRET_RUNTIME_ERROR; \
-    } \
-    double b = AS_NUMBER(pop()); \
-    double a = AS_NUMBER(pop()); \
-    push(valueType(a op b)); \
+if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
+runtimeError("Operands must be numbers."); \
+return INTERPRET_RUNTIME_ERROR; \
+} \
+double b = AS_NUMBER(pop()); \
+double a = AS_NUMBER(pop()); \
+push(valueType(a op b)); \
 } while (false)
 
 //a check for a debug flag that if present prints the trace
@@ -171,8 +171,8 @@ do { \
             }
             //cases for nil,false and true
             case OP_NIL: push(NIL_VAL); break;
-            case OP_TRUE:push(BOOL_VAL(true));break;
-            case OP_FALSE:push(BOOL_VAL(false));break;
+            case OP_TRUE: push(BOOL_VAL(true)); break;
+            case OP_FALSE: push(BOOL_VAL(false)); break;
             //case for equality
             case OP_EQUAL: {
                 Value b = pop();
