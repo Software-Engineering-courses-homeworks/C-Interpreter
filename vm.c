@@ -142,13 +142,8 @@ push(valueType(a op b)); \
                 }
                 push(NUMBER_VAL(-AS_NUMBER(pop())));
                 break;
-            //case for a runtime result that pops the stacks.
-            case OP_RETURN:
-            {
-                printValue(pop());
-                printf("\n");
-                return INTERPRET_OK;
-            }
+            //end of run opcode
+            case OP_RETURN: return INTERPRET_OK;
             //case for a constant value. pushes the constants into the stack
             case OP_CONSTANT:
             {
@@ -204,6 +199,10 @@ push(valueType(a op b)); \
             case OP_MULTIPLY: BINARY_OP(NUMBER_VAL,*); break;
             case OP_DIVIDE: BINARY_OP(NUMBER_VAL, /); break;
             case OP_NOT: push(BOOL_VAL(isFalsey(pop()))); break;
+            case OP_PRINT:
+                printValue(pop());
+                printf("\n");
+                break;
         }
     }
 #undef READ_BYTE

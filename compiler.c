@@ -112,6 +112,22 @@ static void consume(TokenType type, const char* message) {
     errorAtCurrent(message);
 }
 
+/// checks if the current token type in the parser is the same as the one given to the function
+/// @param type the type that needs comparing
+/// @return true is the type matches, false otherwise
+static bool check(TokenType type) {
+    return parser.current.type == type;
+}
+
+/// matches a given type to the parser current type
+/// @param type the type that we want to match
+/// @return true is the match was successful and the token was consumed, false otherwise
+static bool match(TokenType type) {
+    if(!check(type)) return false;
+    advance();
+    return true;
+}
+
 /// appends the given instruction byte to the chunk with the relevant line
 /// @param byte - the byte that needs appending
 static void emitByte(uint8_t byte) {
@@ -265,13 +281,47 @@ static void expressionStatement() {
     emitByte(OP_POP);
 }
 
+/// compiles the expression, consumes the semicolon token and emits a print opcode
+static void printStatement() {
+    expression();
+    consume(TOKEN_SEMICOLON, "Expected ';' after statement.");
+    emitByte(OP_PRINT);
+}
+
+///synchronizes the program after encountering a compilation error error
+static void synchronize() {
+    parser.panicMode = false;
+
+    while(parser.current.type != TOKEN_EOF) {
+        if(parser.previous.type == TOKEN_SEMICOLON) return;
+        switch (parser.current.type) {
+            case TOKEN_CLASS:
+            case TOKEN_FUN:
+            case TOKEN_VAR:
+            case TOKEN_FOR:
+            case TOKEN_IF:
+            case TOKEN_WHILE:
+            case TOKEN_PRINT:
+            case TOKEN_RETURN:
+                return;
+            default:
+                ;
+        }
+
+        advance();
+    }
+}
+
+/// compiles a declaration
 static void declaration() {
     statement();
+
+    if(parser.panicMode) synchronize();
 }
 
 static void statement() {
     if(match(TOKEN_PRINT)) {
-        printStatment();
+        printStatement();
     }
     else {
         expressionStatement();
@@ -311,7 +361,7 @@ ParseRule rules[] = {
   [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
   [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
   [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
-  [TOKEN_BANG-]          = {unary,     NULL,   PREC_NONE},
+  [TOKEN_BANG]          = {unary,     NULL,   PREC_NONE},
   [TOKEN_BANG_EQUAL]    = {NULL,     binary,   PREC_COMPARISON},
   [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_EQUAL_EQUAL]   = {NULL,     binary,   PREC_EQUALITY},
