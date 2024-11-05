@@ -243,6 +243,13 @@ static void expression() {
     parsePrecedence(PREC_ASSIGNMENT);
 }
 
+/// the function executes the expression and consumes the semi-colon
+static void expressionStatement() {
+    expression();
+    consume(TOKEN_SEMICOLON, "Expect ';' expression.");
+    emitByte(OP_POP);
+}
+
 static void declaration() {
     statement();
 }
@@ -250,6 +257,9 @@ static void declaration() {
 static void statement() {
     if(match(TOKEN_PRINT)) {
         printStatment();
+    }
+    else {
+        expressionStatement();
     }
 }
 
