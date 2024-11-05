@@ -241,7 +241,7 @@ static uint8_t identifierConstant(Token* name) {
 static void namedVariable(Token name, bool canAssign) {
     uint8_t arg = identifierConstant(&name);
 
-    //if there is an equals sign after the identifier we compile the assige value
+    //if there is an equals sign after the identifier we compile the assigned value
     if (canAssign && match(TOKEN_EQUAL)) {
         expression();
         emitBytes(OP_SET_GLOBAL,arg);
