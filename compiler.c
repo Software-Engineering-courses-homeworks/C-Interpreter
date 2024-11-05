@@ -165,13 +165,13 @@ static void emitConstant(Value value) {
 
     if(constant <= UINT8_MAX)
     {
-        emitBytes(OP_CONSTANT,constant);
+        emitBytes(OP_CONSTANT, constant);
     }
     //if the constant can't fit in an uint8_t, add it to the chunk using the OP_CONSTANT_LONG opcode
     else if(constant <= UINT24_MAX)
     {
-        // //writes the instruction opcode to the chunk
-        // //splits the constant index into 3 bytes and writes them in a little endian style
+        //writes the instruction opcode to the chunk
+        //splits the constant index into 3 bytes and writes them in a little endian style
         emitBytes(OP_CONSTANT_LONG,constant);
         emitBytes(constant >> 8, constant >> 16);
     }
@@ -200,6 +200,7 @@ static void number() {
     emitConstant(NUMBER_VAL(value));
 }
 
+/// emits the string bytecode
 static void string() {
     emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
 }
@@ -230,12 +231,29 @@ static uint8_t identifierConstant(Token* name) {
     return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
 }
 
+/// a helper function to get the variable value
+/// @param name the name of the variable
+static void namedVariable(Token name) {
+    uint8_t arg = identifierConstant(&name);
+    emitBytes(OP_GET_GLOBAL, arg);
+}
+
+/// allows for the referencing of variables
+static void variable() {
+    namedVariable(parser.previous);
+}
+
 /// parse a variable identifier from the token stream
 /// @param errorMessage the message we want to print if the identifier is not found
 /// @return the index of the constant in the constant table
 static uint8_t parseVariable(const char* errorMessage) {
     consume(TOKEN_IDENTIFIER, errorMessage);
     return identifierConstant(&parser.previous);
+}
+
+///defines a global variable in the bytecode
+static void defineVariable(uint8_t global) {
+    emitBytes(OP_DEFINE_GLOBAL, global);
 }
 
 /// handles the rest of the arithmetic operators. emits the byte code of the instruction
@@ -274,7 +292,27 @@ static void expression() {
     parsePrecedence(PREC_ASSIGNMENT);
 }
 
-/// the function executes the expression and consumes the semi-colon
+/// a function to handle the declaration of global variables
+static void varDeclaration() {
+    //parses the variable
+    uint8_t global = parseVariable("Expect variable name");
+
+    //applies the value to the variable if there is one applied upon declaration.
+    //else, sets the value to nil
+    if(match(TOKEN_EQUAL)) {
+        expression();
+    }
+    else {
+        emitByte(OP_NIL);
+    }
+    //consumes the semicolon token at the end of the declaration
+    consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration");
+
+    //defines the global variable and it's value
+    defineVariable(global);
+}
+
+/// the function executes the expression and consumes the semicolon
 static void expressionStatement() {
     expression();
     consume(TOKEN_SEMICOLON, "Expect ';' expression.");
@@ -314,11 +352,17 @@ static void synchronize() {
 
 /// compiles a declaration
 static void declaration() {
-    statement();
+    if(match(TOKEN_VAR)) {
+        varDeclaration();
+    }
+    else {
+        statement();
+    }
 
     if(parser.panicMode) synchronize();
 }
 
+/// compiles a statement
 static void statement() {
     if(match(TOKEN_PRINT)) {
         printStatement();
@@ -369,7 +413,7 @@ ParseRule rules[] = {
   [TOKEN_GREATER_EQUAL] = {NULL,     binary,   PREC_COMPARISON},
   [TOKEN_LESS]          = {NULL,     binary,   PREC_COMPARISON},
   [TOKEN_LESS_EQUAL]    = {NULL,     binary,   PREC_COMPARISON},
-  [TOKEN_IDENTIFIER]    = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_IDENTIFIER]    = {variable,     NULL,   PREC_NONE},
   [TOKEN_STRING]        = {string,     NULL,   PREC_NONE},
   [TOKEN_NUMBER]        = {number,   NULL,   PREC_NONE},
   [TOKEN_AND]           = {NULL,     NULL,   PREC_NONE},

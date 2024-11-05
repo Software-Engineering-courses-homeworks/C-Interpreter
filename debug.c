@@ -2,6 +2,8 @@
 #include "value.h"
 #include <stdio.h>
 
+#include "object.h"
+
 /// @brief disassembles the chunk of instructions one instruction at a time
 /// @param chunk - the instruction chunk
 /// @param name - the name of the chunk
@@ -67,6 +69,8 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return simpleInstruction("OP_LESS", offset);
         case OP_PRINT:
             return simpleInstruction("OP_PRINT", offset);
+        case OP_DEFINE_GLOBAL:
+            return constantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;

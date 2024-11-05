@@ -41,6 +41,7 @@ void initVM()
     resetStack();
     vm.objects = NULL;
     initTable(&vm.strings);
+    initTable(&vm.globals);
 }
 
 /// frees the VM
@@ -204,6 +205,10 @@ push(valueType(a op b)); \
                 printValue(pop());
                 printf("\n");
                 break;
+            case OP_DEFINE_GLOBAL: {
+                ObjString* name = READ_STRING();
+                tableSet(&vm.globals, name,peek(0));
+            }
         }
     }
 #undef READ_BYTE
