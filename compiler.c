@@ -178,7 +178,7 @@ static void parsePrecedence(Precedence precedence);
 
 /// converts the token value to a double that we can append to the bytecode chunk
 static void number() {
-    double value = strtod(parser.current.start, NULL);
+    double value = strtod(parser.previous.start, NULL);
     emitConstant(NUMBER_VAL(value));
 }
 
