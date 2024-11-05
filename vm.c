@@ -100,6 +100,7 @@ static InterpretResult run()
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 #define READ_CONSTANT_LONG(arr)  (vm.chunk->constants.values[(uint32_t)arr[2] << 16 | (uint16_t)arr[1] << 8 | arr[0]])
+#define READ_STRING() AS_STRING(READ_CONSTANT())
 
 //a macro to perform binary operations
 #define BINARY_OP(valueType, op) \
@@ -208,6 +209,7 @@ push(valueType(a op b)); \
 #undef READ_BYTE
 #undef READ_CONSTANT
 #undef READ_CONSTANT_LONG
+#undef READ_STRING
 #undef BINARY_OP
 }
 
