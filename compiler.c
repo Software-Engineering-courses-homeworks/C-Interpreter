@@ -215,12 +215,17 @@ static void parsePrecedence(Precedence precedence) {
         error("Expect expression.");
         return;
     }
-    prefixRule();
+    bool canAssign = precedence <= PREC_ASSIGNMENT;
+    prefixRule(canAssign);
 
     while (precedence <= getRule(parser.current.type)->precedence) {
         advance();
         ParseFn infixRule = getRule(parser.previous.type)->infix;
         infixRule(canAssign);
+    }
+
+    if(canAssign && match(TOKEN_EQUAL)) {
+        error("Invalid assignment target");
     }
 }
 
@@ -233,11 +238,11 @@ static uint8_t identifierConstant(Token* name) {
 
 /// a helper function to get the variable value
 /// @param name the name of the variable
-static void namedVariable(Token name) {
+static void namedVariable(Token name, bool canAssign) {
     uint8_t arg = identifierConstant(&name);
 
     //if there is an equals sign after the identifier we compile the assige value
-    if (match(TOKEN_EQUAL)) {
+    if (canAssign && match(TOKEN_EQUAL)) {
         expression();
         emitBytes(OP_SET_GLOBAL,arg);
     }
@@ -247,8 +252,8 @@ static void namedVariable(Token name) {
 }
 
 /// allows for the referencing of variables
-static void variable() {
-    namedVariable(parser.previous);
+static void variable(bool canAssign) {
+    namedVariable(parser.previous, canAssign);
 }
 
 /// parse a variable identifier from the token stream
