@@ -244,7 +244,7 @@ static void expression() {
 
 /// evaluates the value in the expression and then negates it
 static void unary() {
-    TokenType operatorType = parser.current.type;
+    TokenType operatorType = parser.previous.type;
 
     //Compile the operand.
     parsePrecedence(PREC_UNARY);
