@@ -173,6 +173,8 @@ static void endCompiler() {
 }
 
 static void expression();
+static void statement();
+static void declaration();
 static ParseRule* getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
 
@@ -196,7 +198,6 @@ static void parsePrecedence(Precedence precedence) {
         error("Expect expression.");
         return;
     }
-
     prefixRule();
 
     while (precedence <= getRule(parser.current.type)->precedence) {
@@ -242,6 +243,16 @@ static void expression() {
     parsePrecedence(PREC_ASSIGNMENT);
 }
 
+static void declaration() {
+    statement();
+}
+
+static void statement() {
+    if(match(TOKEN_PRINT)) {
+        printStatment();
+    }
+}
+
 /// evaluates the value in the expression and then negates it
 static void unary() {
     TokenType operatorType = parser.previous.type;
@@ -275,7 +286,7 @@ ParseRule rules[] = {
   [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
   [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
   [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
-  [TOKEN_BANG]          = {unary,     NULL,   PREC_NONE},
+  [TOKEN_BANG-]          = {unary,     NULL,   PREC_NONE},
   [TOKEN_BANG_EQUAL]    = {NULL,     binary,   PREC_COMPARISON},
   [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_EQUAL_EQUAL]   = {NULL,     binary,   PREC_EQUALITY},
@@ -329,8 +340,9 @@ bool compile(const char *source, Chunk* chunk) {
     parser.panicMode = false;
 
     advance();
-    expression();
-    consume(TOKEN_EOF,"Expect end of expression");
+    while(!match(TOKEN_EOF)) {
+        declaration();
+    }
 
     endCompiler();
     return !parser.hadError;
