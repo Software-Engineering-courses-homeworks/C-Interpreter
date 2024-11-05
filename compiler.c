@@ -31,7 +31,7 @@ typedef enum {
     PREC_PRIMARY
 } Precedence;
 
-typedef void (*ParseFn)();
+typedef void (*ParseFn)(bool canAssign);
 
 typedef struct {
     ParseFn prefix;
@@ -195,13 +195,13 @@ static ParseRule* getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
 
 /// converts the token value to a double that we can append to the bytecode chunk
-static void number() {
+static void number(bool canAssign) {
     double value = strtod(parser.previous.start, NULL);
     emitConstant(NUMBER_VAL(value));
 }
 
 /// emits the string bytecode
-static void string() {
+static void string(bool canAssign) {
     emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
 }
 
@@ -220,7 +220,7 @@ static void parsePrecedence(Precedence precedence) {
     while (precedence <= getRule(parser.current.type)->precedence) {
         advance();
         ParseFn infixRule = getRule(parser.previous.type)->infix;
-        infixRule();
+        infixRule(canAssign);
     }
 }
 
@@ -265,7 +265,7 @@ static void defineVariable(uint8_t global) {
 }
 
 /// handles the rest of the arithmetic operators. emits the byte code of the instruction
-static void binary() {
+static void binary(bool canAssign) {
     TokenType operatorType = parser.previous.type;
     ParseRule* rule = getRule(operatorType);
     parsePrecedence((Precedence)(rule->precedence + 1));
@@ -286,7 +286,7 @@ static void binary() {
 }
 
 /// a function to load the bytecode for boolean and nil values
-static void literal() {
+static void literal(bool canAssign) {
     switch(parser.previous.type) {
         case TOKEN_FALSE: emitByte(OP_FALSE); break;
         case TOKEN_TRUE: emitByte(OP_TRUE); break;
@@ -381,7 +381,7 @@ static void statement() {
 }
 
 /// evaluates the value in the expression and then negates it
-static void unary() {
+static void unary(bool canAssign) {
     TokenType operatorType = parser.previous.type;
 
     //Compile the operand.
@@ -396,7 +396,7 @@ static void unary() {
 }
 
 /// call expression to compile what inside the parentheses, and then parse the closing
-static void grouping() {
+static void grouping(bool canAssign) {
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression.");
 }
