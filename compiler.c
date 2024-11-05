@@ -207,6 +207,21 @@ static void parsePrecedence(Precedence precedence) {
     }
 }
 
+/// creates a constant from an identifier token
+/// @param name a pointer to a token that represents the identifier
+/// @return the index of the created constant
+static uint8_t identifierConstant(Token* name) {
+    return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
+}
+
+/// parse a variable identifier from the token stream
+/// @param errorMessage the message we want to print if the identifier is not found
+/// @return the index of the constant in the constant table
+static uint8_t parseVariable(const char* errorMessage) {
+    consume(TOKEN_IDENTIFIER, errorMessage);
+    return identifierConstant(&parser.previous);
+}
+
 /// handles the rest of the arithmetic operators. emits the byte code of the instruction
 static void binary() {
     TokenType operatorType = parser.previous.type;
