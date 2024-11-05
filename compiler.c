@@ -211,7 +211,7 @@ static void parsePrecedence(Precedence precedence) {
 static void binary() {
     TokenType operatorType = parser.previous.type;
     ParseRule* rule = getRule(operatorType);
-    parsePrecedence((Precedence)rule->precedence + 1);
+    parsePrecedence((Precedence)(rule->precedence + 1));
 
     switch (operatorType) {
         case TOKEN_PLUS: emitByte(OP_ADD); break;
