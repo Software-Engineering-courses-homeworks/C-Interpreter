@@ -40,11 +40,13 @@ void initVM()
 {
     resetStack();
     vm.objects = NULL;
+    initTable(&vm.strings);
 }
 
 /// frees the VM
 void freeVM()
 {
+    freeTable(&vm.strings);
     freeObjects();
 }
 

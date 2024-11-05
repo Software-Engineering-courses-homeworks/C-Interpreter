@@ -154,3 +154,29 @@ void tableAddAll(Table* from, Table* to) {
         }
     }
 }
+
+/// The function checks if the string that was recieved exists in the hash table
+/// @param table the table we seek in
+/// @param chars the string we seek
+/// @param length the string's length
+/// @param hash hash function
+/// @return a pointer to the string if it exists in the table
+ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t hash) {
+    if (table->count == 0) return NULL;
+
+    uint32_t index = hash % table->capacity;
+    for(;;) {
+        Entry* entry = &table->entries[index];
+        if (entry->key == NULL) {
+            // Stop if we find an empty non-tombstone entry.
+            if (IS_NIL(entry->value)) return NULL;
+        }
+        else if (entry->key->length == length && entry->key->hash &&
+            memcmp(entry->key->chars, chars, length) == 0) {
+            //We found it
+            return entry->key;
+        }
+
+        index = (index + 1) % table->capacity;
+    }
+}

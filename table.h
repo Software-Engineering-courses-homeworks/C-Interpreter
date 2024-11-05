@@ -48,4 +48,12 @@ bool tableDelete(Table* table, ObjString* key);
 /// @param to the destination table
 void tableAddAll(Table* from, Table* to);
 
+/// The function checks if the string that was recieved exists in the hash table
+/// @param table The table we seek in
+/// @param chars the string we seek
+/// @param length the length of the string
+/// @param hash the hash function
+/// @return a pointer to the string if it exists in the table
+ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t hash);
+
 #endif //TABLE_H

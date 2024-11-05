@@ -3,6 +3,7 @@
 
 #include "memory.h"
 #include "object.h"
+#include "table.h"
 #include "value.h"
 #include "vm.h"
 
@@ -30,6 +31,9 @@ static Obj* allocateString(char* chars, int length, uint32_t hash) {
     string -> length = length;
     string -> chars = chars;
     string -> hash = hash;
+
+    //adding the new string to the table
+    tableSet(&vm.strings, string, NIL_VAL);
     return string;
 }
 
@@ -56,6 +60,14 @@ static uint32_t hashString(char* key, int length) {
 /// @return a new string
 ObjString* takeString(char* chars, int length) {
     uint32_t hash = hashString(chars, length);
+
+    //we look up the string in the string table, if we find it then we free it
+    ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
+    if (interned != NULL) {
+        FREE_ARRAY(char, chars, length+1);
+        return interned;
+    }
+
     return allocateString(chars, length, hash);
 }
 
