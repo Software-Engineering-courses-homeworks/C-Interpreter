@@ -4,8 +4,6 @@
 #include "common.h"
 #include "value.h"
 
-#define UINT24_MAX 0x00ffffff
-
 //The instruction will mean “return from the current function”.
 typedef enum {
   OP_RETURN,
@@ -28,6 +26,8 @@ typedef enum {
   OP_GREATER,
   OP_LESS,
   OP_PRINT,
+  OP_GET_LOCAL,
+  OP_SET_LOCAL,
 } OpCode;
 
 //wrapper around an array of bytes
