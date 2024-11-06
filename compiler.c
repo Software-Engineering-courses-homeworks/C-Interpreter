@@ -172,8 +172,8 @@ static void emitConstant(Value value) {
     {
         //writes the instruction opcode to the chunk
         //splits the constant index into 3 bytes and writes them in a little endian style
-        emitBytes(OP_CONSTANT_LONG,constant);
-        emitBytes(constant >> 8, constant >> 16);
+        emitBytes(OP_CONSTANT_LONG,(uint8_t)constant);
+        emitBytes((uint8_t)(constant >> 8), (uint8_t)(constant >> 16));
     }
 }
 
