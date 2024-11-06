@@ -95,6 +95,6 @@ ObjString* copyString(const char* chars, int length) {
 /// @param value an Obj value pointer from the stack
 void printObject(Value value) {
     switch (OBJ_TYPE(value)) {
-        case OBJ_STRING: printf("%s", AS_STRING(value)); break;
+        case OBJ_STRING: printf("%s", AS_CSTRING(value)); break;
     }
 }

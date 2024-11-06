@@ -172,6 +172,7 @@ push(valueType(a op b)); \
             case OP_FALSE: push(BOOL_VAL(false)); break;
             //case for popping out of the stack
             case OP_POP: pop(); break;
+            //case for reading from a global variable
             case OP_GET_GLOBAL:
                 ObjString* name = READ_STRING();
                 Value value;
@@ -217,6 +218,8 @@ push(valueType(a op b)); \
             case OP_DEFINE_GLOBAL: {
                 ObjString* name = READ_STRING();
                 tableSet(&vm.globals, name,peek(0));
+                pop();
+                break;
             }
             case OP_SET_GLOBAL: {
                 ObjString* name = READ_STRING();
