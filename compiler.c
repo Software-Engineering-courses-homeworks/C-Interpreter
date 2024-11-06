@@ -335,7 +335,7 @@ static void addLocal(Token name) {
     local->depth = -1;
 }
 
-/// the function gets to local variable tokens and compares them
+/// the function gets to local variable tokens and comapres them
 /// @param a the first local token
 /// @param b the second local token
 /// @return true if they're equal, false otherwise
