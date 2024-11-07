@@ -79,6 +79,12 @@ int disassembleInstruction(Chunk* chunk, int offset)
             return byteInstruction("OP_GET_LOCAL", chunk, offset);
         case OP_SET_LOCAL:
             return byteInstruction("OP_SET_LOCAL", chunk, offset);
+        case OP_JUMP:
+            return jumpInstruction("OP_JUMP", 1, chunk, offset);
+        case OP_JUMP_IF_FALSE:
+            return jumpInstruction("OP_JUMP_IF_FALSE", 1, chunk, offset);
+        case OP_LOOP:
+            return jumpInstruction("OP_LOOP", -1, chunk, offset);
         default:
             printf("Unknown opcode %d\n", instruction);
             return offset + 1;
@@ -122,10 +128,28 @@ static int simpleInstruction(const char* name, int offset)
     return offset + 1;
 }
 
+/// gets a byte instruction and prints a debug log
+/// @param name the instruction name
+/// @param chunk the disassembled chunk
+/// @param offset the bytecode array index
+/// @return the new offset for the bytecode
 static int byteInstruction(const char* name,Chunk* chunk, int offset) {
     uint8_t slot = chunk->code[offset + 1];
     printf("%-16s %4d\n", name, slot);
     return offset + 2;
+}
+
+/// the function gets a jump instruction and prints a debug log
+/// @param name the instruction name
+/// @param sign if the jump was executed or not
+/// @param chunk the chunk being disassembled
+/// @param offset the current bytecode index
+/// @return the new offset after the jump
+static int jumpInstruction(const char* name, int sign, Chunk* chunk, int offset) {
+    uint16_t jump = (uint16_t)(chunk->code[offset + 1] << 8);
+    jump |= chunk->code[offset + 2];
+    printf("%-16s %4d -> %d", name, offset, offset + 3 + sign * jump);
+    return offset + 3;
 }
 
 /// prints the debug for a 1 byte constant instruction

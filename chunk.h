@@ -28,6 +28,9 @@ typedef enum {
   OP_PRINT,
   OP_GET_LOCAL,
   OP_SET_LOCAL,
+  OP_JUMP,
+  OP_JUMP_IF_FALSE,
+  OP_LOOP,
 } OpCode;
 
 //wrapper around an array of bytes
