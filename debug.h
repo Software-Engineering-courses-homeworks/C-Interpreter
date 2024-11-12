@@ -28,4 +28,6 @@ static int constantInstruction(const char* name, Chunk* chunk, int offset);
 
 static int constantLongInstruction(const char* name, Chunk* chunk, int offset);
 
+static int jumpInstruction(const char* name, int sign, Chunk* chunk, int offset);
+
 #endif

@@ -102,6 +102,7 @@ static InterpretResult run()
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 #define READ_CONSTANT_LONG(arr)  (vm.chunk->constants.values[(uint32_t)arr[2] << 16 | (uint16_t)arr[1] << 8 | arr[0]])
 #define READ_STRING() AS_STRING(READ_CONSTANT())
+#define READ_SHORT() (vm.ip += 2, (uint16_t)((vm.ip[-2] << 8) | (vm.ip[-1])))
 
 //a macro to perform binary operations
 #define BINARY_OP(valueType, op) \
@@ -240,12 +241,28 @@ push(valueType(a op b)); \
                 vm.stack[slot] = peek(0);
                 break;
             }
+            case OP_JUMP_IF_FALSE: {
+                uint16_t offset = READ_SHORT();
+                if(isFalsey(peek(0))) vm.ip += offset;
+                break;
+            }
+            case OP_JUMP: {
+                uint16_t offset = READ_SHORT();
+                vm.ip += offset;
+                break;
+            }
+            case OP_LOOP: {
+                uint16_t offset = READ_SHORT();
+                vm.ip -= offset;
+                break;
+            }
         }
     }
 #undef READ_BYTE
 #undef READ_CONSTANT
 #undef READ_CONSTANT_LONG
 #undef READ_STRING
+#undef READ_SHORT
 #undef BINARY_OP
 }
 
