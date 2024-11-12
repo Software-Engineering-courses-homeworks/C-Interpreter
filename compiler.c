@@ -224,7 +224,7 @@ static void patchJump(int offset) {
     currentChunk()->code[offset + 1] = jump & 0xff;
 }
 
-/// gets a compiler struvt and initializes it
+/// gets a compiler struct and initializes it
 /// @param compiler the compiler scope and depth
 static void initCompiler(Compiler* compiler) {
     compiler->localCount = 0;
@@ -679,6 +679,9 @@ static void statement() {
     }
     else if(match(TOKEN_IF)) {
         ifStatement();
+    }
+    else if(match(TOKEN_WHILE)) {
+        whileStatement();
     }
     else if(match(TOKEN_LEFT_BRACE)) {
         beginScope();
