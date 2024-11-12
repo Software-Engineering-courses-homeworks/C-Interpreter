@@ -79,6 +79,9 @@ ObjString* copyString(const char* chars, int length) {
     // hashes the new string before caching
     uint32_t hash = hashString(chars, length);
 
+    ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
+    if (interned != NULL) return interned;
+
     //allocate memory on the heap for  the new string
     char* heapChars = ALLOCATE(char, length + 1);
 
