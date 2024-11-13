@@ -9,11 +9,28 @@ typedef enum {
   OP_RETURN,
   OP_CONSTANT,
   OP_CONSTANT_LONG,
+  OP_NIL,
+  OP_TRUE,
+  OP_FALSE,
+  OP_POP,
+  OP_GET_GLOBAL,
+  OP_DEFINE_GLOBAL,
+  OP_SET_GLOBAL,
   OP_ADD,
   OP_SUBTRACT,
   OP_MULTIPLY,
   OP_DIVIDE,
   OP_NEGATE,
+  OP_NOT,
+  OP_EQUAL,
+  OP_GREATER,
+  OP_LESS,
+  OP_PRINT,
+  OP_GET_LOCAL,
+  OP_SET_LOCAL,
+  OP_JUMP,
+  OP_JUMP_IF_FALSE,
+  OP_LOOP,
 } OpCode;
 
 //wrapper around an array of bytes
@@ -48,9 +65,4 @@ void freeChunk(Chunk* chunk);
 /// @returns the index of the appended constant in the pool
 int addConstant(Chunk* chunk, Value value);
 
-/// 
-/// @param chunk 
-/// @param value 
-/// @param line 
-void writeConstant(Chunk* chunk, Value value, int line);
 #endif

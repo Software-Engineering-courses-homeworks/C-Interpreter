@@ -1,12 +1,14 @@
 #include <stdlib.h>
-
 #include "memory.h"
+#include "object.h"
+#include "value.h"
+#include "vm.h"
 
-/// @brief 
-/// @param pointer - a pointer to the block of memory we want to reallocate
-/// @param oldSize - the old size of the allocation
-/// @param newSize - the new size of the allocation
-/// @return 
+/// @brief reallocates memory dynamically using the info given by the macros calling it and realloc
+/// @param pointer a pointer to the dynamically allocated array
+/// @param oldSize the old size of the array that's used to determine what the new size for the allocation should be
+/// @param newSize the new allocation size
+/// @return returns an abstract pointer to the reallocated array
 void* reallocate(void* pointer, size_t oldSize, size_t newSize)
 {
     //if the new size is zero, then free the memory
@@ -20,4 +22,27 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize)
     void* result = realloc(pointer, newSize);
     if (result == NULL) exit(1);
     return result;
+}
+
+/// a helper function to free allocated objects
+/// @param object the object that needs to be freed
+static void freeObject(Obj* object) {
+    switch(object->type) {
+        case OBJ_STRING: {
+            ObjString* string = (ObjString*)object;
+            FREE_ARRAY(char, string->chars, string->length + 1);
+            FREE(ObjString, object);
+            break;
+        }
+    }
+}
+
+/// the function goes over the object list and frees all of them at the end of the program
+void freeObjects() {
+    Obj* object = vm.objects;
+    while(object != NULL) {
+        Obj* next = object->next;
+        freeObject(object);
+        object = next;
+    }
 }

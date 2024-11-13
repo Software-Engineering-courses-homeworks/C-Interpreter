@@ -2,6 +2,8 @@
 
 #include "memory.h"
 #include "value.h"
+#include <string.h>
+#include "object.h"
 
 /// @brief the function initializes the array of values
 /// @param array 
@@ -40,5 +42,28 @@ void freeValueArray(ValueArray* array)
 /// @param value 
 void printValue(Value value)
 {
-    printf("%g",value);
+    switch (value.type) {
+        case VAL_BOOL:
+            printf(AS_BOOL(value) ? "true" : "false");
+            break;
+        case VAL_NIL: printf("nil"); break;
+        case VAL_NUMBER: printf("%g", AS_NUMBER(value)); break;
+        case VAL_OBJ: printObject(value); break;
+    }
+}
+
+/// the function checks if the two values that were received are the same
+/// @param a
+/// @param b
+/// @return true - the values are the same. false - not the same
+bool valuesEqual(Value a, Value b) {
+    //if the values don't have the same type, so return false
+    if (a.type != b.type) return false;
+    switch (a.type) {
+        case VAL_BOOL: return AS_BOOL(a) == AS_BOOL(b);
+        case VAL_NIL: return true;
+        case VAL_NUMBER: return AS_NUMBER(a) == AS_NUMBER(b);
+        case VAL_OBJ: return AS_OBJ(a) == AS_OBJ(b);
+        default: return false;//unreachable
+    }
 }

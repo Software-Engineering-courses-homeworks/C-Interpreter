@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.29)
-project(C_Interpeter C)
+project(C_Interpreter C)
 
 set(CMAKE_C_STANDARD 11)
 
@@ -20,4 +20,8 @@ add_executable(C_Interpeter
         vm.c
         compiler.c
         scanner.h
-        scanner.c)
+        scanner.c
+        object.h
+        object.c
+        table.h
+        table.c)
