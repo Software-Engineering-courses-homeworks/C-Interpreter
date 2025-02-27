@@ -5,7 +5,8 @@
 #include "value.h"
 
 //The instruction will mean “return from the current function”.
-typedef enum {
+typedef enum
+{
   OP_RETURN,
   OP_CONSTANT,
   OP_CONSTANT_LONG,
@@ -34,7 +35,8 @@ typedef enum {
 } OpCode;
 
 //wrapper around an array of bytes
-typedef struct {
+typedef struct
+{
   int count;
   int capacity;
   int lineCount;

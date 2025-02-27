@@ -32,7 +32,7 @@ void writeChunk(Chunk* chunk, uint8_t byte, int line)
     }
 
     //increases the array size using the same memory macros we use for the chunk array
-    if(chunk->lineCapacity < chunk->lineCount + 1)
+    if (chunk->lineCapacity < chunk->lineCount + 1)
     {
         int oldLineCapacity = chunk->lineCapacity;
         chunk->lineCapacity = GROW_CAPACITY(oldLineCapacity);
@@ -41,9 +41,9 @@ void writeChunk(Chunk* chunk, uint8_t byte, int line)
 
     //check if the previous instruction has the same line, if so increment the saved line by 1
     //else, if the array size needs to be increased, increase it then add the new line
-    if(line == chunk->lines[chunk->lineCount-1]/100)
+    if (line == chunk->lines[chunk->lineCount - 1] / 100)
     {
-        chunk->lines[chunk->lineCount-1]++;
+        chunk->lines[chunk->lineCount - 1]++;
     }
     else
     {

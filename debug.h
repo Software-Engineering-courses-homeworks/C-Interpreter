@@ -22,7 +22,7 @@ int getLine(Chunk* chunk, int offset);
 
 static int simpleInstruction(const char* name, int offset);
 
-static int byteInstruction(const char* name,Chunk* chunk, int offset);
+static int byteInstruction(const char* name, Chunk* chunk, int offset);
 
 static int constantInstruction(const char* name, Chunk* chunk, int offset);
 

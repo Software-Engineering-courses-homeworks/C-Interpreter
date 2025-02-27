@@ -9,7 +9,8 @@
 
 /// initializes the hash table
 /// @param table the VM's hash table
-void initTable(Table *table) {
+void initTable(Table* table)
+{
     table->count = 0;
     table->capacity = 0;
     table->entries = NULL;
@@ -17,7 +18,8 @@ void initTable(Table *table) {
 
 /// frees the given hash table
 /// @param table the VM's hash table
-void freeTable(Table *table) {
+void freeTable(Table* table)
+{
     FREE_ARRAY(Entry, table->entries, table->capacity);
     initTable(table);
 }
@@ -27,25 +29,31 @@ void freeTable(Table *table) {
 /// @param capacity the table's capacity
 /// @param key the key we want to find
 /// @return a pointer to the entry in the array that fits the given key
-static Entry* findEntry(Entry* entries, int capacity, ObjString *key) {
+static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
+{
     uint32_t index = key->hash % capacity;
     Entry* tombstone = NULL;
 
-    for(;;) {
+    for (;;)
+    {
         Entry* entry = &entries[index];
         //if the spot at the hash index is free or equal to the given key, return the index.
         //else, move to the next spot in the table
-        if (entry->key == NULL) {
-            if (IS_NIL(entry->value)) {
+        if (entry->key == NULL)
+        {
+            if (IS_NIL(entry->value))
+            {
                 // Empty entry.
                 return tombstone != NULL ? tombstone : entry;
             }
-            else {
+            else
+            {
                 // We found a tombstone.
                 if (tombstone == NULL) tombstone = entry;
             }
         }
-        else if (entry->key == key) {
+        else if (entry->key == key)
+        {
             // We found the key.
             return entry;
         }
@@ -59,7 +67,8 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString *key) {
 /// @param key the key
 /// @param value the return value
 /// @return true if the key ahs been found, false otherwise
-bool tableGet(Table* table, ObjString* key, Value* value) {
+bool tableGet(Table* table, ObjString* key, Value* value)
+{
     //if the table isn't initialized, return false
     if (table->count == 0) return false;
 
@@ -72,19 +81,22 @@ bool tableGet(Table* table, ObjString* key, Value* value) {
     return true;
 }
 
-static void adjustCapacity(Table *table, int capacity) {
+static void adjustCapacity(Table* table, int capacity)
+{
     //allocates memory for the entry array
     Entry* entries = ALLOCATE(Entry, capacity);
 
     //initializes the new entry array
-    for(int i = 0; i < capacity; i++) {
+    for (int i = 0; i < capacity; i++)
+    {
         entries[i].key = NULL;
         entries[i].value = NIL_VAL;
     }
 
     //transfers the old hash values to the new entry array and resets the count
     table->count = 0;
-    for (int i = 0; i < table->capacity; i++) {
+    for (int i = 0; i < table->capacity; i++)
+    {
         Entry* entry = &table->entries[i];
         if (entry->key == NULL) continue;
 
@@ -107,8 +119,10 @@ static void adjustCapacity(Table *table, int capacity) {
 /// @param key the key string
 /// @param value the hash value
 /// @return true if the new entry was added, false otherwise
-bool tableSet(Table* table, ObjString* key, Value value) {
-    if(table->count + 1 > table->capacity * TABLE_MAX_LOAD) {
+bool tableSet(Table* table, ObjString* key, Value value)
+{
+    if (table->count + 1 > table->capacity * TABLE_MAX_LOAD)
+    {
         int capacity = GROW_CAPACITY(table->capacity);
         adjustCapacity(table, capacity);
     }
@@ -130,7 +144,8 @@ bool tableSet(Table* table, ObjString* key, Value value) {
 /// @param table the hash table
 /// @param key the key that needs to be removed
 /// @return true if the deletion was successful, false otherwise
-bool tableDelete(Table* table, ObjString* key) {
+bool tableDelete(Table* table, ObjString* key)
+{
     if (table->count == 0) return false;
 
     // Find the entry.
@@ -146,10 +161,13 @@ bool tableDelete(Table* table, ObjString* key) {
 /// transfers values from one hash table to another
 /// @param from the origin table
 /// @param to the destination table
-void tableAddAll(Table* from, Table* to) {
-    for (int i = 0; i < from->capacity; i++) {
+void tableAddAll(Table* from, Table* to)
+{
+    for (int i = 0; i < from->capacity; i++)
+    {
         Entry* entry = &from->entries[i];
-        if (entry->key != NULL) {
+        if (entry->key != NULL)
+        {
             tableSet(to, entry->key, entry->value);
         }
     }
@@ -161,18 +179,22 @@ void tableAddAll(Table* from, Table* to) {
 /// @param length the string's length
 /// @param hash hash function
 /// @return a pointer to the string if it exists in the table
-ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t hash) {
+ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t hash)
+{
     if (table->count == 0) return NULL;
 
     uint32_t index = hash % table->capacity;
-    for(;;) {
+    for (;;)
+    {
         Entry* entry = &table->entries[index];
-        if (entry->key == NULL) {
+        if (entry->key == NULL)
+        {
             // Stop if we find an empty non-tombstone entry.
             if (IS_NIL(entry->value)) return NULL;
         }
-        else if (entry->key->length == length && entry->key->hash==hash &&
-            memcmp(entry->key->chars, chars, length) == 0) {
+        else if (entry->key->length == length && entry->key->hash == hash &&
+            memcmp(entry->key->chars, chars, length) == 0)
+        {
             //We found it
             return entry->key;
         }

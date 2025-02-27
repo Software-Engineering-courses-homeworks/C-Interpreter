@@ -12,7 +12,7 @@
 void* reallocate(void* pointer, size_t oldSize, size_t newSize)
 {
     //if the new size is zero, then free the memory
-    if(newSize == 0)
+    if (newSize == 0)
     {
         free(pointer);
         return NULL;
@@ -26,9 +26,12 @@ void* reallocate(void* pointer, size_t oldSize, size_t newSize)
 
 /// a helper function to free allocated objects
 /// @param object the object that needs to be freed
-static void freeObject(Obj* object) {
-    switch(object->type) {
-        case OBJ_STRING: {
+static void freeObject(Obj* object)
+{
+    switch (object->type)
+    {
+    case OBJ_STRING:
+        {
             ObjString* string = (ObjString*)object;
             FREE_ARRAY(char, string->chars, string->length + 1);
             FREE(ObjString, object);
@@ -38,9 +41,11 @@ static void freeObject(Obj* object) {
 }
 
 /// the function goes over the object list and frees all of them at the end of the program
-void freeObjects() {
+void freeObjects()
+{
     Obj* object = vm.objects;
-    while(object != NULL) {
+    while (object != NULL)
+    {
         Obj* next = object->next;
         freeObject(object);
         object = next;

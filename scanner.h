@@ -1,7 +1,8 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
-typedef enum {
+typedef enum
+{
     // Single-character tokens.
     TOKEN_LEFT_PAREN, TOKEN_RIGHT_PAREN,
     TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE,
@@ -25,14 +26,15 @@ typedef enum {
 
     // compiler tokens
     TOKEN_ERROR, TOKEN_EOF
-}TokenType;
+} TokenType;
 
-typedef struct {
+typedef struct
+{
     TokenType type;
     const char* start;
     int length;
     int line;
-}Token;
+} Token;
 
 void initScanner(const char* source);
 
