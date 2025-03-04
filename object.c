@@ -15,9 +15,9 @@
 /// @param size
 /// @param type
 /// @return a new object
-static Obj* allocateObject(size_t size, ObjType type)
+static Obj *allocateObject(size_t size, ObjType type)
 {
-    Obj* object = (Obj*)reallocate(NULL, 0, size);
+    Obj *object = (Obj *) reallocate(NULL, 0, size);
     object->type = type;
     object->next = vm.objects;
     vm.objects = object;
@@ -26,9 +26,9 @@ static Obj* allocateObject(size_t size, ObjType type)
 
 /// A function that creates a Lox function. creates it to a blank state
 /// @return
-ObjFunction* newFunction()
+ObjFunction *newFunction()
 {
-    ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
+    ObjFunction *function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
     function->arity = 0;
     function->name = NULL;
     initChunk(&function->chunk);
@@ -39,9 +39,9 @@ ObjFunction* newFunction()
 /// @param chars
 /// @param length
 /// @return a new string
-static Obj* allocateString(char* chars, int length, uint32_t hash)
+static ObjString *allocateString(char *chars, int length, uint32_t hash)
 {
-    ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
+    ObjString *string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
     string->length = length;
     string->chars = chars;
     string->hash = hash;
@@ -55,7 +55,7 @@ static Obj* allocateString(char* chars, int length, uint32_t hash)
 /// @param key the string key
 /// @param length the string key length
 /// @return a uint32_t hash key
-static uint32_t hashString(char* key, int length)
+static uint32_t hashString(char *key, int length)
 {
     //the hash function's bse prime
     uint32_t hash = 2166136261u;
@@ -63,7 +63,7 @@ static uint32_t hashString(char* key, int length)
     //hashes the string by going over each character in the key
     for (int i = 0; i < length; i++)
     {
-        hash ^= (uint8_t)key[i];
+        hash ^= (uint8_t) key[i];
         hash *= 16777619;
     }
 
@@ -74,15 +74,15 @@ static uint32_t hashString(char* key, int length)
 /// @param chars
 /// @param length
 /// @return a new string
-ObjString* takeString(char* chars, int length)
+ObjString *takeString(char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
 
     //we look up the string in the string table, if we find it then we free it
-    ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
+    ObjString *interned = tableFindString(&vm.strings, chars, length, hash);
     if (interned != NULL)
     {
-        FREE_ARRAY(char, chars, length+1);
+        FREE_ARRAY(char, chars, length + 1);
         return interned;
     }
 
@@ -93,16 +93,16 @@ ObjString* takeString(char* chars, int length)
 /// @param chars
 /// @param length
 /// @return a new string
-ObjString* copyString(const char* chars, int length)
+ObjString *copyString(const char *chars, int length)
 {
     // hashes the new string before caching
     uint32_t hash = hashString(chars, length);
 
-    ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
+    ObjString *interned = tableFindString(&vm.strings, chars, length, hash);
     if (interned != NULL) return interned;
 
     //allocate memory on the heap for  the new string
-    char* heapChars = ALLOCATE(char, length + 1);
+    char *heapChars = ALLOCATE(char, length + 1);
 
     //copies the string contents to the newly allocated memory
     memcpy(heapChars, chars, length);
@@ -115,9 +115,9 @@ ObjString* copyString(const char* chars, int length)
 
 /// the function allows for the printing of functions
 /// @param function the function object
-static void printFunction(ObjFunction* function)
+static void printFunction(ObjFunction *function)
 {
-    if(function->name == NULL)
+    if (function->name == NULL)
     {
         printf("<script>");
         return;
@@ -131,10 +131,11 @@ void printObject(Value value)
 {
     switch (OBJ_TYPE(value))
     {
-    case OBJ_STRING: printf("%s", AS_CSTRING(value));
-        break;
-    case OBJ_FUNCTION:
-        printFunction(AS_FUNCTION(value));
-        break;
+        case OBJ_STRING:
+            printf("%s", AS_CSTRING(value));
+            break;
+        case OBJ_FUNCTION:
+            printFunction(AS_FUNCTION(value));
+            break;
     }
 }
