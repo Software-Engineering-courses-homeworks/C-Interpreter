@@ -24,7 +24,7 @@ typedef struct
     {
         bool boolean;
         double number;
-        Obj* obj;
+        Obj *obj;
     } as;
 } Value;
 
@@ -46,7 +46,7 @@ typedef struct
 {
     int capacity;
     int count;
-    Value* values;
+    Value *values;
 } ValueArray;
 
 ///returns if the two values are the same
@@ -54,16 +54,16 @@ bool valuesEqual(Value a, Value b);
 
 ///initializes a wrapper ValueArray for the interpreter
 /// @param array
-void initValueArray(ValueArray* array);
+void initValueArray(ValueArray *array);
 
 ///frees the values in the ValueArray
 /// @param array
-void freeValueArray(ValueArray* array);
+void freeValueArray(ValueArray *array);
 
 /// adds a value to a ValueArray
 /// @param array
 /// @param value
-void writeValueArray(ValueArray* array, Value value);
+void writeValueArray(ValueArray *array, Value value);
 
 /// @brief prints the value
 /// @param value 

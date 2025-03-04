@@ -4,14 +4,14 @@
 
 /// @brief initializes a chunk
 /// @param chunk - a pointer to a chunk struct
-void initChunk(Chunk* chunk)
+void initChunk(Chunk *chunk)
 {
     //initializes the struct values to be those of an empty, uninitialized array
     chunk->count = 0;
     chunk->capacity = 0;
+    chunk->code = NULL;
     chunk->lineCount = 0;
     chunk->lineCapacity = 0;
-    chunk->code = NULL;
     chunk->lines = NULL;
     initValueArray(&chunk->constants);
 }
@@ -20,7 +20,7 @@ void initChunk(Chunk* chunk)
 /// @param chunk - a pointer to a chunk struct
 /// @param byte  - a byte that gets appended to the end of the chunk
 /// @param line - represents the instruction's line
-void writeChunk(Chunk* chunk, uint8_t byte, int line)
+void writeChunk(Chunk *chunk, uint8_t byte, int line)
 {
     //checks if the current array already has capacity for the new byte
     //in case there isn't enough capacity, we grow the array to make room
@@ -58,7 +58,7 @@ void writeChunk(Chunk* chunk, uint8_t byte, int line)
 
 /// @brief frees the previous array and reinitialize the chunk
 /// @param chunk 
-void freeChunk(Chunk* chunk)
+void freeChunk(Chunk *chunk)
 {
     FREE_ARRAY(uint8_t, chunk->code, chunk->count);
     FREE_ARRAY(int, chunk->lines, chunk->capacity);
@@ -70,7 +70,7 @@ void freeChunk(Chunk* chunk)
 /// @param chunk
 /// @param value
 /// @returns the index of the appended constant in the pool
-int addConstant(Chunk* chunk, Value value)
+int addConstant(Chunk *chunk, Value value)
 {
     writeValueArray(&chunk->constants, value);
     return chunk->constants.count - 1;
