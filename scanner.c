@@ -244,10 +244,8 @@ static Token string()
         if (peek() == '\n') scanner.line++;
         advance();
     }
-
     //if reached the end of the source code without reaching the closing quote, return an error token
     if (isAtEnd()) return errorToken("Unterminated string");
-
     //the closing quote
     advance();
     return makeToken(TOKEN_STRING);

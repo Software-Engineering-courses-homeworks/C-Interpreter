@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD 11)
 
 include_directories(.)
 
-add_executable(C_Interpeter
+add_executable(C_Interpreter
     chunk.c
     chunk.h
     common.h
