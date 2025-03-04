@@ -4,18 +4,27 @@
 #include "chunk.h"
 #include "table.h"
 #include "value.h"
+#include "object.h"
 
-#define STACK_MAX 256
+#define FRAMES_MAX 64
+#define STACK_MAX (FRAMES_MAX*UINT8_COUNT)
 
 typedef struct
 {
-    Chunk* chunk;
-    uint8_t* ip;
+    ObjFunction *function;
+    uint8_t *ip;
+    Value *slots;
+} CallFrame;
+
+typedef struct
+{
+    CallFrame frames[FRAMES_MAX];
+    int frameCount;
     Value stack[STACK_MAX];
-    Value* stackTop;
+    Value *stackTop;
     Table strings;
     Table globals;
-    Obj* objects;
+    Obj *objects;
 } VM;
 
 typedef enum
@@ -35,7 +44,7 @@ void freeVM();
 
 /// interprets a given chunk to the VM and returns the interpreted result
 /// @return the interpreted result of the given chunk(need to change)
-InterpretResult interpret(const char* source);
+InterpretResult interpret(const char *source);
 
 /// pushes a value onto the VM stack
 /// @param val the value that needs to be pushed
@@ -44,4 +53,5 @@ void push(Value val);
 /// pops the top value from the VM stack
 /// @return the top value in the stack
 Value pop();
+
 #endif //CLOX_VM_H

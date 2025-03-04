@@ -7,7 +7,7 @@
 /// @brief disassembles the chunk of instructions one instruction at a time
 /// @param chunk - the instruction chunk
 /// @param name - the name of the chunk
-void disassembleChunk(Chunk* chunk, const char* name)
+void disassembleChunk(Chunk *chunk, const char *name)
 {
     printf("== %s ==\n", name);
 
@@ -21,7 +21,7 @@ void disassembleChunk(Chunk* chunk, const char* name)
 /// @param chunk an uint8_t array that contains the bytecode for the instructions
 /// @param offset the current instruction index
 /// @return the index for the next instruction
-int disassembleInstruction(Chunk* chunk, int offset)
+int disassembleInstruction(Chunk *chunk, int offset)
 {
     //prints the instruction number
     printf("%04d ", offset);
@@ -98,7 +98,7 @@ int disassembleInstruction(Chunk* chunk, int offset)
 /// @param chunk the bytecode chunk
 /// @param offset the index of the offending instruction
 /// @return returns the line of the offending instruction
-int getLine(Chunk* chunk, int offset)
+int getLine(Chunk *chunk, int offset)
 {
     int index = 0;
     int tempLine = chunk->lines[index];
@@ -114,7 +114,7 @@ int getLine(Chunk* chunk, int offset)
             index++;
             tempLine = chunk->lines[index];
         }
-        //else, decrements the encoded instruction count in the line value
+            //else, decrements the encoded instruction count in the line value
         else
             tempLine--;
     }
@@ -125,7 +125,7 @@ int getLine(Chunk* chunk, int offset)
 /// @param name name of the opcode
 /// @param offset the instruction index
 /// @return the new instruction index
-static int simpleInstruction(const char* name, int offset)
+static int simpleInstruction(const char *name, int offset)
 {
     printf("%s\n", name);
     return offset + 1;
@@ -136,7 +136,7 @@ static int simpleInstruction(const char* name, int offset)
 /// @param chunk the disassembled chunk
 /// @param offset the bytecode array index
 /// @return the new offset for the bytecode
-static int byteInstruction(const char* name, Chunk* chunk, int offset)
+static int byteInstruction(const char *name, Chunk *chunk, int offset)
 {
     uint8_t slot = chunk->code[offset + 1];
     printf("%-16s %4d\n", name, slot);
@@ -149,9 +149,9 @@ static int byteInstruction(const char* name, Chunk* chunk, int offset)
 /// @param chunk the chunk being disassembled
 /// @param offset the current bytecode index
 /// @return the new offset after the jump
-static int jumpInstruction(const char* name, int sign, Chunk* chunk, int offset)
+static int jumpInstruction(const char *name, int sign, Chunk *chunk, int offset)
 {
-    uint16_t jump = (uint16_t)(chunk->code[offset + 1] << 8);
+    uint16_t jump = (uint16_t) (chunk->code[offset + 1] << 8);
     jump |= chunk->code[offset + 2];
     printf("%-16s %4d -> %d", name, offset, offset + 3 + sign * jump);
     return offset + 3;
@@ -162,7 +162,7 @@ static int jumpInstruction(const char* name, int sign, Chunk* chunk, int offset)
 /// @param chunk a pointer to the bytecode chunk
 /// @param offset the instruction index
 /// @return the new instruction index
-static int constantInstruction(const char* name, Chunk* chunk, int offset)
+static int constantInstruction(const char *name, Chunk *chunk, int offset)
 {
     uint8_t constant = chunk->code[offset + 1];
     printf("%-16s %4d '", name, constant);
@@ -176,10 +176,11 @@ static int constantInstruction(const char* name, Chunk* chunk, int offset)
 /// @param chunk the bytecode chunk
 /// @param offset the index of the bytecode chunk array
 /// @return the new offset after teh operation execution
-static int constantLongInstruction(const char* name, Chunk* chunk, int offset)
+static int constantLongInstruction(const char *name, Chunk *chunk, int offset)
 {
-    uint32_t constant = (uint32_t)chunk->code[offset + 3] << 16 | (uint16_t)chunk->code[offset + 2] << 8 | chunk->code[
-        offset + 1];
+    uint32_t constant =
+            (uint32_t) chunk->code[offset + 3] << 16 | (uint16_t) chunk->code[offset + 2] << 8 | chunk->code[
+                    offset + 1];
     printf("%-16s %4d '", name, constant);
     printValue(chunk->constants.values[constant]);
     printf("'\n");
