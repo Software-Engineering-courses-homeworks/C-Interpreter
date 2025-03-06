@@ -24,6 +24,23 @@ static Obj *allocateObject(size_t size, ObjType type)
     return object;
 }
 
+ObjClosure *newClosure(ObjFunction *function)
+{
+    //Allocates the upvalue array and initializes it to NULL
+    ObjUpvalue** upvalues = ALLOCATE(ObjUpvalue*, function->upvalueCount);
+    for(int i = 0; i < function->upvalueCount; i++)
+    {
+        upvalues[i] = NULL;
+    }
+
+    //initializes the closure object
+    ObjClosure *closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE);
+    closure->function = function;
+    closure->upvalues = upvalues;
+    closure->upvalueCount = function->upvalueCount;
+    return closure;
+}
+
 /// A function that creates a Lox function. creates it to a blank state
 /// @return
 ObjFunction *newFunction()
@@ -31,13 +48,14 @@ ObjFunction *newFunction()
     ObjFunction *function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
     function->arity = 0;
     function->name = NULL;
+    function->upvalueCount = 0;
     initChunk(&function->chunk);
     return function;
 }
 
 ObjNative *newNative(NativeFn function)
 {
-    ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
+    ObjNative *native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
     native->function = function;
     return native;
 }
@@ -120,6 +138,15 @@ ObjString *copyString(const char *chars, int length)
     return allocateString(heapChars, length, hash);
 }
 
+ObjUpvalue* newUpvalue(Value* slot)
+{
+    ObjUpvalue* upvalue = ALLOCATE_OBJ(ObjUpvalue, OBJ_UPVALUE);
+    upvalue->closed = NIL_VAL;
+    upvalue->location = slot;
+    upvalue->next = NULL;
+    return upvalue;
+}
+
 /// the function allows for the printing of functions
 /// @param function the function object
 static void printFunction(ObjFunction *function)
@@ -146,6 +173,12 @@ void printObject(Value value)
             break;
         case OBJ_NATIVE:
             printf("<native fn>");
+            break;
+        case OBJ_CLOSURE:
+            printFunction(AS_CLOSURE(value)->function);
+            break;
+        case OBJ_UPVALUE:
+            printf("upvalue");
             break;
     }
 }
