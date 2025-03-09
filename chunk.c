@@ -22,44 +22,15 @@ void initChunk(Chunk *chunk)
 /// @param line - represents the instruction's line
 void writeChunk(Chunk *chunk, uint8_t byte, int line)
 {
-//    //checks if the current array already has capacity for the new byte
-//    //in case there isn't enough capacity, we grow the array to make room
-//    if (chunk->capacity < chunk->count + 1)
-//    {
-//        int oldCapacity = chunk->capacity;
-//        chunk->capacity = GROW_CAPACITY(oldCapacity);
-//        chunk->code = GROW_ARRAY(uint8_t, chunk->code, oldCapacity, chunk->capacity);
-//    }
-//
-//    //increases the array size using the same memory macros we use for the chunk array
-//    if (chunk->lineCapacity < chunk->lineCount + 1)
-//    {
-//        int oldLineCapacity = chunk->lineCapacity;
-//        chunk->lineCapacity = GROW_CAPACITY(oldLineCapacity);
-//        chunk->lines = GROW_ARRAY(int, chunk->lines, oldLineCapacity, chunk->lineCapacity);
-//    }
-//
-//    //check if the previous instruction has the same line, if so increment the saved line by 1
-//    //else, if the array size needs to be increased, increase it then add the new line
-//    if (line == chunk->lines[chunk->lineCount - 1] / 100)
-//    {
-//        chunk->lines[chunk->lineCount - 1]++;
-//    }
-//    else
-//    {
-//        //adds the new line to the end of the array
-//        chunk->lines[chunk->lineCount] = line * 100;
-//        chunk->lineCount++;
-//    }
-//
-//    chunk->code[chunk->count] = byte;
-//    chunk->count++;
+    //checks if the current array already has capacity for the new byte
+    //in case there isn't enough capacity, we grow the array to make room
     if (chunk->capacity < chunk->count + 1) {
         int oldCapacity = chunk->capacity;
         chunk->capacity = GROW_CAPACITY(oldCapacity);
         chunk->code = GROW_ARRAY(uint8_t, chunk->code, oldCapacity, chunk->capacity);
         chunk->lines = GROW_ARRAY(int, chunk->lines, oldCapacity, chunk->capacity);
     }
+
     chunk->code[chunk->count] = byte;
     chunk->lines[chunk->count] = line;
     chunk->count++;
