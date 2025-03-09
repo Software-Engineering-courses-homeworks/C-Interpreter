@@ -14,16 +14,25 @@
 /// The function allocated memory for a new object and initializes its type field
 /// @param size
 /// @param type
-/// @return a new object
+/// @return      a new object
 static Obj *allocateObject(size_t size, ObjType type)
 {
     Obj *object = (Obj *) reallocate(NULL, 0, size);
     object->type = type;
     object->next = vm.objects;
     vm.objects = object;
+    object->isMarked = false;
+
+    //GC logging
+    #ifdef DEBUG_LOG_GC
+    printf("%p allocate %zu for %d\n", (void*)object, size, type);
+    #endif
     return object;
 }
 
+///
+/// @param function the function that we need to close over
+/// @return         a new ObjClosure
 ObjClosure *newClosure(ObjFunction *function)
 {
     //Allocates the upvalue array and initializes it to NULL
@@ -42,7 +51,7 @@ ObjClosure *newClosure(ObjFunction *function)
 }
 
 /// A function that creates a Lox function. creates it to a blank state
-/// @return
+/// @return a new function object
 ObjFunction *newFunction()
 {
     ObjFunction *function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
@@ -53,6 +62,9 @@ ObjFunction *newFunction()
     return function;
 }
 
+/// the function gets a pointer to a native C function and converts it to a Lox function
+/// @param function the native C function that needs to be adapted
+/// @return         adds support for a native C function
 ObjNative *newNative(NativeFn function)
 {
     ObjNative *native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
@@ -63,7 +75,7 @@ ObjNative *newNative(NativeFn function)
 /// the function allocates memory and sets a new string
 /// @param chars
 /// @param length
-/// @return a new string
+/// @return       a new string
 static ObjString *allocateString(char *chars, int length, uint32_t hash)
 {
     ObjString *string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
@@ -72,14 +84,16 @@ static ObjString *allocateString(char *chars, int length, uint32_t hash)
     string->hash = hash;
 
     //adding the new string to the table
+    push(OBJ_VAL(string));
     tableSet(&vm.strings, string, NIL_VAL);
+    pop();
     return string;
 }
 
 /// hashes a given string using the FNV-1a hash function
-/// @param key the string key
+/// @param key    the string key
 /// @param length the string key length
-/// @return a uint32_t hash key
+/// @return       a uint32_t hash key
 static uint32_t hashString(char *key, int length)
 {
     //the hash function's bse prime
@@ -98,7 +112,7 @@ static uint32_t hashString(char *key, int length)
 /// The function receives an array of characters and a length, and returns a new string from the array
 /// @param chars
 /// @param length
-/// @return a new string
+/// @return       a new string
 ObjString *takeString(char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
@@ -117,7 +131,7 @@ ObjString *takeString(char *chars, int length)
 /// The function copies a string from a given character array into a new allocated memory location
 /// @param chars
 /// @param length
-/// @return a new string
+/// @return       a new string
 ObjString *copyString(const char *chars, int length)
 {
     // hashes the new string before caching
@@ -138,6 +152,9 @@ ObjString *copyString(const char *chars, int length)
     return allocateString(heapChars, length, hash);
 }
 
+/// the function gets a Value for a closure and makes it an upvalue
+/// @param slot the function variable that needs to be saved before getting removed from the stack
+/// @return     a new upvalue object
 ObjUpvalue* newUpvalue(Value* slot)
 {
     ObjUpvalue* upvalue = ALLOCATE_OBJ(ObjUpvalue, OBJ_UPVALUE);

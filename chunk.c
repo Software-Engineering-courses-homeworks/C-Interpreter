@@ -1,9 +1,10 @@
 #include <stdlib.h>
 #include "chunk.h"
 #include "memory.h"
+#include "vm.h"
 
-/// @brief initializes a chunk
-/// @param chunk - a pointer to a chunk struct
+/// initializes a chunk
+/// @param chunk a pointer to a chunk struct
 void initChunk(Chunk *chunk)
 {
     //initializes the struct values to be those of an empty, uninitialized array
@@ -17,9 +18,9 @@ void initChunk(Chunk *chunk)
 }
 
 /// @brief writes a value to a chunk
-/// @param chunk - a pointer to a chunk struct
-/// @param byte  - a byte that gets appended to the end of the chunk
-/// @param line - represents the instruction's line
+/// @param chunk   a pointer to a chunk struct
+/// @param byte    a byte that gets appended to the end of the chunk
+/// @param line    represents the instruction's line
 void writeChunk(Chunk *chunk, uint8_t byte, int line)
 {
     //checks if the current array already has capacity for the new byte
@@ -49,9 +50,11 @@ void freeChunk(Chunk *chunk)
 /// adds a constant to the constant pool via discrete function for orderly operation
 /// @param chunk
 /// @param value
-/// @returns the index of the appended constant in the pool
+/// @returns      the index of the appended constant in the pool
 int addConstant(Chunk *chunk, Value value)
 {
+    push(value);
     writeValueArray(&chunk->constants, value);
+    pop();
     return chunk->constants.count - 1;
 }
