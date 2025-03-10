@@ -332,7 +332,7 @@ static void endScope()
     //removes all the local variables from the scope that was ended
     while (current->localCount > 0 && current->locals[current->localCount - 1].depth > current->scopeDepth)
     {
-        if(current->locals[current->localCount -1].isCaptured)
+        if (current->locals[current->localCount - 1].isCaptured)
         {
             emitByte(OP_CLOSE_UPVALUE);
         }
@@ -482,7 +482,7 @@ static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal)
         }
 
     }
-    //
+    // checks if there is space for more closed over upvalues
     if (upvalueCount == UINT8_COUNT)
     {
         error("Too many closure variables in function.");
