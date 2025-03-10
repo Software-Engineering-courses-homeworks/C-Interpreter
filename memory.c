@@ -111,6 +111,12 @@ static void blackenObject(Obj* object)
             markObject((Obj*)closure->upvalues[i]);
         }
         break;
+    case OBJ_CLASS:
+        {
+        ObjClass* klass = (ObjClass*)object;
+        markObject((Obj*)klass->name);
+        break;
+        }
     case OBJ_FUNCTION:
         ObjFunction* function = (ObjFunction*)object;
         markObject((Obj*)function->name);
@@ -119,6 +125,12 @@ static void blackenObject(Obj* object)
     case OBJ_UPVALUE:
         markValue(((ObjUpvalue*)object)->closed);
         break;
+    case OBJ_INSTANCE: {
+        ObjInstance* instance = (ObjInstance*)object;
+        markObject((Obj*)instance->klass);
+        markTable(&instance->fields);
+        break;
+    }
     case OBJ_NATIVE:
     case OBJ_STRING:
         break;
@@ -167,6 +179,17 @@ static void freeObject(Obj* object)
             FREE(ObjUpvalue, object);
             break;
         }
+        case OBJ_CLASS: {
+        FREE(ObjClass, object);
+        break;
+        }
+        case OBJ_INSTANCE: {
+        ObjInstance* instance = (ObjInstance*)object;
+        freeTable(&instance->fields);
+        FREE(ObjInstance, object);
+        break;
+    }
+
     }
 }
 
