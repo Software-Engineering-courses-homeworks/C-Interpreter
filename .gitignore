@@ -1,3 +1,4 @@
+# ignores the build directories while we are working on the project
 .vscode/
 build/
 build version/
