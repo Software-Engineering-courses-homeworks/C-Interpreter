@@ -200,6 +200,7 @@ static void freeObject(Obj* object)
     }
         case OBJ_BOUND_METHOD:
             FREE(ObjBoundMethod, object);
+            break;
 
     }
 }

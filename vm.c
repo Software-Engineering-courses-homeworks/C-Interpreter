@@ -317,7 +317,7 @@ static void defineMethod(ObjString* name)
 {
     //Retrieves the method value from the top of the stack
     Value method = peek(0);
-    ObjClass* klass = AS_CLASS(method);
+    ObjClass* klass = AS_CLASS(peek(1));
 
     //stores the method in the class's method table using the provided name.
     tableSet(&klass->methods,name,method);
