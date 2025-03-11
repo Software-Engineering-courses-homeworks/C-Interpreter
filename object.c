@@ -15,18 +15,18 @@
 /// @param size
 /// @param type
 /// @return      a new object
-static Obj *allocateObject(size_t size, ObjType type)
+static Obj* allocateObject(size_t size, ObjType type)
 {
-    Obj *object = (Obj *) reallocate(NULL, 0, size);
+    Obj* object = (Obj*)reallocate(NULL, 0, size);
     object->type = type;
     object->next = vm.objects;
     vm.objects = object;
     object->isMarked = false;
 
     //GC logging
-    #ifdef DEBUG_LOG_GC
+#ifdef DEBUG_LOG_GC
     printf("%p allocate %zu for %d\n", (void*)object, size, type);
-    #endif
+#endif
     return object;
 }
 
@@ -42,8 +42,9 @@ ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method)
     return bound;
 }
 
-ObjClass* newClass(ObjString* name) {
-    ObjClass* klass = ALLOCATE_OBJ(ObjClass,OBJ_CLASS);
+ObjClass* newClass(ObjString* name)
+{
+    ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
     klass->name = name;
     initTable(&klass->methods);
     return klass;
@@ -52,17 +53,17 @@ ObjClass* newClass(ObjString* name) {
 ///
 /// @param function the function that we need to close over
 /// @return         a new ObjClosure
-ObjClosure *newClosure(ObjFunction *function)
+ObjClosure* newClosure(ObjFunction* function)
 {
     //Allocates the upvalue array and initializes it to NULL
     ObjUpvalue** upvalues = ALLOCATE(ObjUpvalue*, function->upvalueCount);
-    for(int i = 0; i < function->upvalueCount; i++)
+    for (int i = 0; i < function->upvalueCount; i++)
     {
         upvalues[i] = NULL;
     }
 
     //initializes the closure object
-    ObjClosure *closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE);
+    ObjClosure* closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE);
     closure->function = function;
     closure->upvalues = upvalues;
     closure->upvalueCount = function->upvalueCount;
@@ -71,9 +72,9 @@ ObjClosure *newClosure(ObjFunction *function)
 
 /// A function that creates a Lox function. creates it to a blank state
 /// @return a new function object
-ObjFunction *newFunction()
+ObjFunction* newFunction()
 {
-    ObjFunction *function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
+    ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
     function->arity = 0;
     function->name = NULL;
     function->upvalueCount = 0;
@@ -83,7 +84,7 @@ ObjFunction *newFunction()
 
 ObjInstance* newInstance(ObjClass* klass)
 {
-    ObjInstance *instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+    ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
     instance->klass = klass;
     initTable(&instance->fields);
     return instance;
@@ -92,9 +93,9 @@ ObjInstance* newInstance(ObjClass* klass)
 /// the function gets a pointer to a native C function and converts it to a Lox function
 /// @param function the native C function that needs to be adapted
 /// @return         adds support for a native C function
-ObjNative *newNative(NativeFn function)
+ObjNative* newNative(NativeFn function)
 {
-    ObjNative *native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
+    ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
     native->function = function;
     return native;
 }
@@ -103,9 +104,9 @@ ObjNative *newNative(NativeFn function)
 /// @param chars
 /// @param length
 /// @return       a new string
-static ObjString *allocateString(char *chars, int length, uint32_t hash)
+static ObjString* allocateString(char* chars, int length, uint32_t hash)
 {
-    ObjString *string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
+    ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
     string->length = length;
     string->chars = chars;
     string->hash = hash;
@@ -121,7 +122,7 @@ static ObjString *allocateString(char *chars, int length, uint32_t hash)
 /// @param key    the string key
 /// @param length the string key length
 /// @return       a uint32_t hash key
-static uint32_t hashString(char *key, int length)
+static uint32_t hashString(char* key, int length)
 {
     //the hash function's bse prime
     uint32_t hash = 2166136261u;
@@ -129,7 +130,7 @@ static uint32_t hashString(char *key, int length)
     //hashes the string by going over each character in the key
     for (int i = 0; i < length; i++)
     {
-        hash ^= (uint8_t) key[i];
+        hash ^= (uint8_t)key[i];
         hash *= 16777619;
     }
 
@@ -140,12 +141,12 @@ static uint32_t hashString(char *key, int length)
 /// @param chars
 /// @param length
 /// @return       a new string
-ObjString *takeString(char *chars, int length)
+ObjString* takeString(char* chars, int length)
 {
     uint32_t hash = hashString(chars, length);
 
     //we look up the string in the string table, if we find it then we free it
-    ObjString *interned = tableFindString(&vm.strings, chars, length, hash);
+    ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
     if (interned != NULL)
     {
         FREE_ARRAY(char, chars, length + 1);
@@ -159,16 +160,16 @@ ObjString *takeString(char *chars, int length)
 /// @param chars
 /// @param length
 /// @return       a new string
-ObjString *copyString(const char *chars, int length)
+ObjString* copyString(const char* chars, int length)
 {
     // hashes the new string before caching
     uint32_t hash = hashString(chars, length);
 
-    ObjString *interned = tableFindString(&vm.strings, chars, length, hash);
+    ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
     if (interned != NULL) return interned;
 
     //allocate memory on the heap for  the new string
-    char *heapChars = ALLOCATE(char, length + 1);
+    char* heapChars = ALLOCATE(char, length + 1);
 
     //copies the string contents to the newly allocated memory
     memcpy(heapChars, chars, length);
@@ -193,7 +194,7 @@ ObjUpvalue* newUpvalue(Value* slot)
 
 /// the function allows for the printing of functions
 /// @param function the function object
-static void printFunction(ObjFunction *function)
+static void printFunction(ObjFunction* function)
 {
     if (function->name == NULL)
     {
@@ -209,29 +210,29 @@ void printObject(Value value)
 {
     switch (OBJ_TYPE(value))
     {
-        case OBJ_CLASS:
-            printf("%s", AS_CLASS(value)->name->chars);
-            break;
-        case OBJ_STRING:
-            printf("%s", AS_CSTRING(value));
-            break;
-        case OBJ_FUNCTION:
-            printFunction(AS_FUNCTION(value));
-            break;
-        case OBJ_INSTANCE:
-            printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
-            break;
-        case OBJ_NATIVE:
-            printf("<native fn>");
-            break;
-        case OBJ_CLOSURE:
-            printFunction(AS_CLOSURE(value)->function);
-            break;
-        case OBJ_UPVALUE:
-            printf("upvalue");
-            break;
-        case OBJ_BOUND_METHOD:
-            printFunction(AS_BOUND_METHOD(value)->method->function);
-            break;
+    case OBJ_CLASS:
+        printf("%s", AS_CLASS(value)->name->chars);
+        break;
+    case OBJ_STRING:
+        printf("%s", AS_CSTRING(value));
+        break;
+    case OBJ_FUNCTION:
+        printFunction(AS_FUNCTION(value));
+        break;
+    case OBJ_INSTANCE:
+        printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
+        break;
+    case OBJ_NATIVE:
+        printf("<native fn>");
+        break;
+    case OBJ_CLOSURE:
+        printFunction(AS_CLOSURE(value)->function);
+        break;
+    case OBJ_UPVALUE:
+        printf("upvalue");
+        break;
+    case OBJ_BOUND_METHOD:
+        printFunction(AS_BOUND_METHOD(value)->method->function);
+        break;
     }
 }

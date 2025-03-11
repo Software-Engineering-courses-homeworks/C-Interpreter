@@ -7,6 +7,7 @@
 #include "table.h"
 
 #define OBJ_TYPE(value)         (AS_OBJ(value)->type)
+
 #define IS_STRING(value)        isObjType(value, OBJ_STRING)
 #define IS_FUNCTION(value)      isObjType(value, OBJ_FUNCTION)
 #define IS_NATIVE(value)        isObjType(value, OBJ_NATIVE)
@@ -14,6 +15,7 @@
 #define IS_CLASS(value)         isObjType(value, OBJ_CLASS)
 #define IS_INSTANCE(value)      isObjType(value, OBJ_INSTANCE)
 #define IS_BOUND_METHOD(value)  isObjType(value, OBJ_BOUND_METHOD)
+
 #define AS_STRING(value)        ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value)       (((ObjString*)AS_OBJ(value))->chars)
 #define AS_FUNCTION(value)      ((ObjFunction*)AS_OBJ(value))
@@ -39,7 +41,7 @@ struct Obj
 {
     ObjType type;
     bool isMarked;
-    struct Obj *next;
+    struct Obj* next;
 };
 
 // Functions are implemented as objects in the interpreter, hence an Obj struct for them
@@ -49,10 +51,10 @@ typedef struct
     int arity; // the number of parameters the function expects.
     int upvalueCount;
     Chunk chunk;
-    ObjString *name;
+    ObjString* name;
 } ObjFunction;
 
-typedef Value (*NativeFn)(int argCount, Value *args);
+typedef Value (*NativeFn)(int argCount, Value* args);
 
 typedef struct
 {
@@ -64,14 +66,14 @@ struct ObjString
 {
     Obj obj;
     int length;
-    char *chars;
+    char* chars;
     uint32_t hash;
 };
 
 typedef struct ObjUpvalue
 {
     Obj obj;
-    Value *location;
+    Value* location;
     Value closed;
     struct ObjUpvalue* next;
 } ObjUpvalue;
@@ -79,46 +81,49 @@ typedef struct ObjUpvalue
 typedef struct
 {
     Obj obj;
-    ObjFunction *function;
+    ObjFunction* function;
     ObjUpvalue** upvalues;
     int upvalueCount;
 } ObjClosure;
 
-typedef struct {
+typedef struct
+{
     Obj obj;
-    ObjString *name;
+    ObjString* name;
     Table methods;
-}ObjClass;
+} ObjClass;
 
-typedef struct {
-    Obj *obj;
+typedef struct
+{
+    Obj* obj;
     ObjClass* klass;
     Table fields;
-}ObjInstance;
+} ObjInstance;
 
-typedef struct {
+typedef struct
+{
     Obj obj;
     Value reciever;
     ObjClosure* method;
-}ObjBoundMethod;
+} ObjBoundMethod;
 
-ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure *method);
+ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method);
 
 ObjClass* newClass(ObjString* name);
 
-ObjClosure *newClosure(ObjFunction *function);
+ObjClosure* newClosure(ObjFunction* function);
 
-ObjFunction *newFunction();
+ObjFunction* newFunction();
 
-ObjInstance *newInstance(ObjClass* klass);
+ObjInstance* newInstance(ObjClass* klass);
 
 ObjUpvalue* newUpvalue(Value* slot);
 
-ObjNative *newNative(NativeFn function);
+ObjNative* newNative(NativeFn function);
 
-ObjString *takeString(char *chars, int length);
+ObjString* takeString(char* chars, int length);
 
-ObjString *copyString(const char *chars, int length);
+ObjString* copyString(const char* chars, int length);
 
 void printObject(Value value);
 
