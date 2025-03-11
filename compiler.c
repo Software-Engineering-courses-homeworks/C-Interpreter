@@ -63,6 +63,8 @@ typedef enum
 {
     TYPE_FUNCTION,
     TYPE_SCRIPT,
+    TYPE_METHOD,
+    TYPE_INITIALIZER,
 } FunctionType;
 
 typedef struct Compiler
@@ -76,8 +78,13 @@ typedef struct Compiler
     int scopeDepth;
 } Compiler;
 
+typedef struct ClassCompiler {
+    struct ClassCompiler *enclosing;
+}ClassCompiler;
+
 Parser parser;
 Compiler *current = NULL;
+ClassCompiler* currentClass = NULL;
 
 /// a standard getter function
 /// @return a pointer to the current chunk being compiled
@@ -223,10 +230,20 @@ static int emitJump(uint8_t instruction)
 /// emits a return instruction to the bytecode
 static void emitReturn()
 {
-    emitByte(OP_NIL);
+    if(current->type == TYPE_INITIALIZER)
+    {
+        emitBytes(OP_GET_LOCAL,0);
+    }
+    else
+    {
+        emitByte(OP_NIL);
+    }
     emitByte(OP_RETURN);
 }
 
+///
+/// @param value
+/// @return
 static uint32_t makeConstant(Value value)
 {
     int constant = addConstant(currentChunk(), value);
@@ -296,8 +313,17 @@ static void initCompiler(Compiler *compiler, FunctionType type)
     Local *local = &current->locals[current->localCount++];
     local->depth = 0;
     local->isCaptured = false;
-    local->name.start = "";
-    local->name.length = 0;
+
+    if(type != TYPE_FUNCTION)
+    {
+        local->name.start = "this";
+        local->name.length = 4;
+    }
+    else
+    {
+        local->name.start = "";
+        local->name.length = 0;
+    }
 }
 
 /// ends the compilation of the chunk
@@ -468,6 +494,11 @@ static int resolveLocal(Compiler *compiler, Token *name)
     return -1;
 }
 
+///
+/// @param compiler
+/// @param index
+/// @param isLocal
+/// @return returns the index of the upvalue in the upvalue array
 static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal)
 {
     int upvalueCount = compiler->function->upvalueCount;
@@ -494,6 +525,10 @@ static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal)
     return compiler->function->upvalueCount++;
 }
 
+///
+/// @param compiler
+/// @param name
+/// @return
 static int resolveUpvalue(Compiler *compiler, Token *name)
 {
     if (compiler->enclosing == NULL) return -1;
@@ -581,6 +616,18 @@ static void namedVariable(Token name, bool canAssign)
 static void variable(bool canAssign)
 {
     namedVariable(parser.previous, canAssign);
+}
+
+///
+/// @param canAssign
+static void this_(bool canAssign)
+{
+    if (currentClass == NULL) {
+        error("Cant use 'this' outside of a class");
+        return;
+    }
+
+    variable(false);
 }
 
 /// parse a variable identifier from the token stream
@@ -702,12 +749,16 @@ static void binary(bool canAssign)
     }
 }
 
+///
+/// @param canAssign
 static void call(bool canAssign)
 {
     uint8_t argCount = argumentList();
     emitBytes(OP_CALL, argCount);
 }
 
+/// accesses a class's fields and methods
+/// @param canAssign determines whether the attribute being accessed is a field or a method
 static void dot(bool canAssign)
 {
     consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
@@ -717,6 +768,12 @@ static void dot(bool canAssign)
     {
         expression();
         emitBytes(OP_SET_PROPERTY, name);
+    }
+    else if(match(TOKEN_LEFT_PAREN))
+    {
+        uint8_t argCount = argumentList();
+        emitBytes(OP_INVOKE, name);
+        emitByte(argCount);
     }
     else
     {
@@ -801,17 +858,57 @@ static void function(FunctionType type)
 }
 
 ///
+static void method()
+{
+    //consume and process the method name
+    consume(TOKEN_IDENTIFIER, "Expect method name");
+
+    //create the method name constant and adds it to the constant table
+    uint8_t constant = identifierConstant(&parser.previous);
+
+    //processes the method body
+    FunctionType type = TYPE_METHOD;
+
+    if(parser.previous.length == 4 && memcmp(parser.previous.start, "init", 4) == 0)
+    {
+        type = TYPE_INITIALIZER;
+    }
+    function(type);
+
+    //emits the method instructions
+    emitBytes(OP_METHOD, constant);
+}
+
+///
 static void classDeclaration()
 {
     consume(TOKEN_IDENTIFIER, "Expect class name.");
+    Token className = parser.previous;
     uint8_t nameConstant = identifierConstant(&parser.previous);
     declareVariable();
 
     emitBytes(OP_CLASS, nameConstant);
     defineVariable(nameConstant);
 
+    ClassCompiler classCompiler;
+    classCompiler.enclosing = currentClass;
+    currentClass = &classCompiler;
+
+    namedVariable(className, false);
+    //consumes the left brace at the begining of the class
     consume(TOKEN_LEFT_BRACE, "Expect '{' after class name.");
+
+    while(!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
+    {
+        method();
+    }
+
+    //consumes teh right brace at the end of the class definition and declaration
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after class name.");
+    emitByte(OP_POP);
+
+    //remove the current class from the compiling class stack
+    currentClass = currentClass->enclosing;
 }
 
 /// a function to handle the declaration of functions
@@ -965,6 +1062,9 @@ static void returnStatement()
     }
     else
     {
+        if(current->type == TYPE_INITIALIZER) {
+            error("Can't return a value from an initializer");
+        }
         expression();
         consume(TOKEN_SEMICOLON, "Expected ';' after return value.");
         emitByte(OP_RETURN);
@@ -1073,6 +1173,7 @@ static void statement()
 }
 
 /// evaluates the value in the expression and then negates it
+/// @param canAssign a boolean that determines whether a variable can be assigned (required for the Abstract function we use)
 static void unary(bool canAssign)
 {
     TokenType operatorType = parser.previous.type;
@@ -1136,7 +1237,7 @@ ParseRule rules[] = {
         [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
         [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
         [TOKEN_SUPER] = {NULL, NULL, PREC_NONE},
-        [TOKEN_THIS] = {NULL, NULL, PREC_NONE},
+        [TOKEN_THIS] = {this_, NULL, PREC_NONE},
         [TOKEN_TRUE] = {literal, NULL, PREC_NONE},
         [TOKEN_VAR] = {NULL, NULL, PREC_NONE},
         [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
@@ -1145,17 +1246,17 @@ ParseRule rules[] = {
 };
 
 /// a wrapper function that returns the precedence rule for a token type
-/// @param type - the token type whose precedence needs to be checked
-/// @return returns the parse rule for that token type
+/// @param type the token type whose precedence needs to be checked
+/// @return     returns the parse rule for that token type
 static ParseRule *getRule(TokenType type)
 {
     return &rules[type];
 }
 
 /// compiles the source code
-/// @param source - the source code that needs to be compiled
-/// @param chunk - the bytecode chunk we feed teh tokenized source code to
-/// @return returns whether the code had error in it
+/// @param source the source code that needs to be compiled
+/// @param chunk  the bytecode chunk we feed teh tokenized source code to
+/// @return       returns whether the code had error in it
 ObjFunction *compile(const char *source)
 {
     //initializes the scanner with the source string

@@ -40,6 +40,8 @@ typedef enum
     OP_SET_PROPERTY,
     OP_CLOSE_UPVALUE,
     OP_CLASS,
+    OP_METHOD,
+    OP_INVOKE,
 } OpCode;
 
 //wrapper around an array of bytes

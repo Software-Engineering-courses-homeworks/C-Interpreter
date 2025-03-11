@@ -10,11 +10,16 @@
 
 VM vm;
 
+/// converts the native C clock function into a Lox function
+/// @param argCount the number of arguments the C clock function takes
+/// @param args     the argument array
+/// @return         the return value of C's clock function divided by the clocks per second constant
 static Value clockNative(int argCount, Value* args)
 {
     return NUMBER_VAL((double) clock() / CLOCKS_PER_SEC);
 }
 
+/// resets the VM's stack
 static void resetStack()
 {
     vm.stackTop = vm.stack;
@@ -24,7 +29,7 @@ static void resetStack()
 
 ///  prints the line where the script had a runtime error
 /// @param format
-/// @param ...
+/// @param ... a va_list of parameters
 static void runtimeError(const char* format, ...)
 {
     va_list args;
@@ -56,6 +61,9 @@ static void runtimeError(const char* format, ...)
     resetStack();
 }
 
+///
+/// @param name
+/// @param function
 static void defineNative(const char* name, NativeFn function)
 {
     push(OBJ_VAL(copyString(name, (int) strlen(name))));
@@ -79,6 +87,9 @@ void initVM()
     vm.nextGC = 1024 * 1024;
 
     initTable(&vm.strings);
+    vm.initString = NULL;
+    vm.initString = copyString("init", 4);
+
     initTable(&vm.globals);
 
     defineNative("clock", clockNative);
@@ -88,6 +99,7 @@ void initVM()
 void freeVM()
 {
     freeTable(&vm.strings);
+    vm.initString = NULL;
     freeObjects();
 }
 
@@ -108,13 +120,17 @@ Value pop()
 }
 
 ///
-/// @param distance - how far down from the top to look
-/// @return returns a value from the stack without popping it
+/// @param distance how far down from the top to look
+/// @return         returns a value from the stack without popping it
 static Value peek(int distance)
 {
     return vm.stackTop[-1 - distance];
 }
 
+///
+/// @param closure
+/// @param argCount
+/// @return
 static bool call(ObjClosure* closure, int argCount)
 {
     // checks if the number of arguments passed to the closure is correct
@@ -149,9 +165,24 @@ static bool callValue(Value callee, int argCount)
     {
         switch (OBJ_TYPE(callee))
         {
+        case OBJ_BOUND_METHOD: {
+            ObjBoundMethod* bound = AS_BOUND_METHOD(callee);
+            vm.stackTop[-argCount - 1] = bound->reciever;
+             return call(bound->method, argCount);
+        }
         case OBJ_CLASS: {
             ObjClass* klass = AS_CLASS(callee);
             vm.stackTop[-argCount-1] = OBJ_VAL(newInstance(klass));
+            Value initializer;
+            if(tableGet(&klass->methods, vm.initString, &initializer))
+            {
+                return call(AS_CLOSURE(initializer), argCount);
+            }
+            else if( argCount != 0)
+            {
+                runtimeError("Expected 0 arguments but got %d.", argCount);
+                return false;
+            }
             return true;
         }
         case OBJ_NATIVE:
@@ -170,6 +201,69 @@ static bool callValue(Value callee, int argCount)
     return false;
 }
 
+///
+/// @param klass
+/// @param name
+/// @param argCount
+/// @return
+static bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount)
+{
+    Value method;
+    if(!tableGet(&klass->methods, name, &method))
+    {
+        runtimeError("Undefined property '%s'.", name->chars);
+        return false;
+    }
+
+    return call(AS_CLOSURE(method), argCount);
+}
+
+///Invoke a method on an instance by looking it up in the class and executing it
+/// @param name The name of the method to invoke
+/// @param argCount The number of arguments passed to the method
+/// @return True if the method was successfully invoked, false otherwise.
+static bool invoke(ObjString* name, int argCount) {
+    Value receiver = peek(argCount);
+
+    if(!IS_INSTANCE(receiver))
+    {
+        runtimeError("Only instances have methods.");
+        return false;
+    }
+
+    ObjInstance* instance = AS_INSTANCE(receiver);
+
+    Value value;
+    if(tableGet(&instance->fields,name,&value)) {
+        vm.stackTop[-argCount - 1] = value;
+        return callValue(value,argCount);
+    }
+
+    return invokeFromClass(instance->klass,name,argCount);
+}
+
+/// the function gets a class and a method name and binds it
+/// @param klass the class's name identifier
+/// @param name  the name of the method identifier
+/// @return      true - if the method was bound successfully. false - otherwise
+static bool bindMethod(ObjClass* klass, ObjString* name)
+{
+    Value method;
+    if(!tableGet(&klass->methods, name, &method)) {
+        runtimeError("Undefined property", name->chars);
+        return false;
+    }
+
+    ObjBoundMethod* bound = newBoundMethod(peek(0), AS_CLOSURE(method));
+
+    pop();
+    push(OBJ_VAL(bound));
+    return true;
+}
+
+///
+/// @param local
+/// @return      an upvalue representing the captured local variable
 static ObjUpvalue* captureUpvalue(Value* local)
 {
     //search for an existing upvalue and reuse it
@@ -204,6 +298,8 @@ static ObjUpvalue* captureUpvalue(Value* local)
     return createdUpvalue;
 }
 
+///
+/// @param last
 static void closeUpvalues(Value* last)
 {
     while (vm.openUpvalues != NULL && vm.openUpvalues->location >= last)
@@ -215,9 +311,22 @@ static void closeUpvalues(Value* last)
     }
 }
 
+/// Defines a method for a given class
+/// @param name The name of the method to define
+static void defineMethod(ObjString* name)
+{
+    //Retrieves the method value from the top of the stack
+    Value method = peek(0);
+    ObjClass* klass = AS_CLASS(method);
+
+    //stores the method in the class's method table using the provided name.
+    tableSet(&klass->methods,name,method);
+    pop();
+}
+
 /// the function gets a value and returns whether it is a nil or false value or not
 /// @param val the value that needs to be checked
-/// @return returns true for either nil or false, false otherwise
+/// @return    returns true for either nil or false, false otherwise
 static bool isFalsey(Value val)
 {
     return IS_NIL(val) || (IS_BOOL(val) && !AS_BOOL(val));
@@ -479,6 +588,17 @@ push(valueType(a op b)); \
                 frame->ip -= offset;
                 break;
             }
+            case OP_INVOKE: {
+            ObjString* method = READ_STRING();
+            int argCount = READ_BYTE();
+
+            if(!invoke(method, argCount))
+            {
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            frame = &vm.frames[vm.frameCount - 1];
+            break;
+        }
         case OP_CLOSURE:
             {
                 ObjFunction* function = AS_FUNCTION(READ_CONSTANT());
@@ -534,9 +654,17 @@ push(valueType(a op b)); \
                  push(value);
                  break;
                 }
-            runtimeError("Undefined property '%s'.", name->chars);
-            return INTERPRET_RUNTIME_ERROR;
+            if(!bindMethod(instance->klass, name))
+            {
+                return INTERPRET_RUNTIME_ERROR;
             }
+
+            break;
+            }
+        case OP_METHOD: {
+            defineMethod(READ_STRING());
+            break;
+        }
         }
 
     }
@@ -549,8 +677,8 @@ push(valueType(a op b)); \
 }
 
 /// interprets a given chunk to the VM and returns the interpreted result
-/// @param source - the given source code
-/// @return the interpreted result of the given chunk(Need to change)
+/// @param source the given source code
+/// @return       the interpreted result of the given chunk
 InterpretResult interpret(const char* source)
 {
     //compiles the source code and save the main function to interpret
