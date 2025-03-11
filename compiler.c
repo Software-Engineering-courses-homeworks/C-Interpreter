@@ -69,8 +69,8 @@ typedef enum
 
 typedef struct Compiler
 {
-    struct Compiler *enclosing;
-    ObjFunction *function;
+    struct Compiler* enclosing;
+    ObjFunction* function;
     FunctionType type;
     Local locals[UINT8_COUNT];
     int localCount;
@@ -78,17 +78,18 @@ typedef struct Compiler
     int scopeDepth;
 } Compiler;
 
-typedef struct ClassCompiler {
-    struct ClassCompiler *enclosing;
-}ClassCompiler;
+typedef struct ClassCompiler
+{
+    struct ClassCompiler* enclosing;
+} ClassCompiler;
 
 Parser parser;
-Compiler *current = NULL;
+Compiler* current = NULL;
 ClassCompiler* currentClass = NULL;
 
 /// a standard getter function
 /// @return a pointer to the current chunk being compiled
-static Chunk *currentChunk()
+static Chunk* currentChunk()
 {
     return &current->function->chunk;
 }
@@ -96,7 +97,7 @@ static Chunk *currentChunk()
 /// prints the error message and toggles the flag
 /// @param token - the offending token
 /// @param message - the error message
-static void errorAt(Token *token, const char *message)
+static void errorAt(Token* token, const char* message)
 {
     if (parser.panicMode) return;
 
@@ -126,14 +127,14 @@ static void errorAt(Token *token, const char *message)
 
 /// throws an error at the last token consumed
 /// @param msg the error message
-static void error(const char *msg)
+static void error(const char* msg)
 {
     errorAt(&parser.previous, msg);
 }
 
 /// throws out an error at the current token being consumed
 /// @param msg the error message
-static void errorAtCurrent(const char *msg)
+static void errorAtCurrent(const char* msg)
 {
     errorAt(&parser.current, msg);
 }
@@ -158,7 +159,7 @@ static void advance()
 /// if not, reported the error
 /// @param type
 /// @param message
-static void consume(TokenType type, const char *message)
+static void consume(TokenType type, const char* message)
 {
     if (parser.current.type == type)
     {
@@ -230,9 +231,9 @@ static int emitJump(uint8_t instruction)
 /// emits a return instruction to the bytecode
 static void emitReturn()
 {
-    if(current->type == TYPE_INITIALIZER)
+    if (current->type == TYPE_INITIALIZER)
     {
-        emitBytes(OP_GET_LOCAL,0);
+        emitBytes(OP_GET_LOCAL, 0);
     }
     else
     {
@@ -254,7 +255,7 @@ static uint32_t makeConstant(Value value)
         return 0;
     }
 
-    return (uint32_t) constant;
+    return (uint32_t)constant;
 }
 
 /// emits the constant byteCode to the chunk using the writeConstant function because of extended functionality
@@ -267,13 +268,13 @@ static void emitConstant(Value value)
     {
         emitBytes(OP_CONSTANT, constant);
     }
-        //if the constant can't fit in an uint8_t, add it to the chunk using the OP_CONSTANT_LONG opcode
+    //if the constant can't fit in an uint8_t, add it to the chunk using the OP_CONSTANT_LONG opcode
     else if (constant <= UINT24_MAX)
     {
         //writes the instruction opcode to the chunk
         //splits the constant index into 3 bytes and writes them in a little endian style
-        emitBytes(OP_CONSTANT_LONG, (uint8_t) constant);
-        emitBytes((uint8_t) (constant >> 8), (uint8_t) (constant >> 16));
+        emitBytes(OP_CONSTANT_LONG, (uint8_t)constant);
+        emitBytes((uint8_t)(constant >> 8), (uint8_t)(constant >> 16));
     }
 }
 
@@ -294,7 +295,7 @@ static void patchJump(int offset)
 
 /// gets a compiler struct and initializes it
 /// @param compiler the compiler scope and depth
-static void initCompiler(Compiler *compiler, FunctionType type)
+static void initCompiler(Compiler* compiler, FunctionType type)
 {
     compiler->enclosing = current;
     compiler->function = NULL;
@@ -310,11 +311,11 @@ static void initCompiler(Compiler *compiler, FunctionType type)
         current->function->name = copyString(parser.previous.start, parser.previous.length);
     }
 
-    Local *local = &current->locals[current->localCount++];
+    Local* local = &current->locals[current->localCount++];
     local->depth = 0;
     local->isCaptured = false;
 
-    if(type != TYPE_FUNCTION)
+    if (type != TYPE_FUNCTION)
     {
         local->name.start = "this";
         local->name.length = 4;
@@ -327,10 +328,10 @@ static void initCompiler(Compiler *compiler, FunctionType type)
 }
 
 /// ends the compilation of the chunk
-static ObjFunction *endCompiler()
+static ObjFunction* endCompiler()
 {
     emitReturn();
-    ObjFunction *function = current->function;
+    ObjFunction* function = current->function;
 
 #ifdef DEBUG_PRINT_CODE
     if (!parser.hadError)
@@ -376,7 +377,7 @@ static void statement();
 
 static void declaration();
 
-static ParseRule *getRule(TokenType type);
+static ParseRule* getRule(TokenType type);
 
 static void parsePrecedence(Precedence precedence);
 
@@ -438,7 +439,7 @@ static void parsePrecedence(Precedence precedence)
 /// creates a constant from an identifier token
 /// @param name a pointer to a token that represents the identifier
 /// @return the index of the created constant
-static uint8_t identifierConstant(Token *name)
+static uint8_t identifierConstant(Token* name)
 {
     return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
 }
@@ -454,7 +455,7 @@ static void addLocal(Token name)
         return;
     }
 
-    Local *local = &current->locals[current->localCount++];
+    Local* local = &current->locals[current->localCount++];
 
     local->name = name;
     local->depth = -1;
@@ -465,7 +466,7 @@ static void addLocal(Token name)
 /// @param a the first local token
 /// @param b the second local token
 /// @return true if they're equal, false otherwise
-static bool identifiersEqual(Token *a, Token *b)
+static bool identifiersEqual(Token* a, Token* b)
 {
     if (a->length != b->length) return false;
     return memcmp(a->start, b->start, a->length) == 0;
@@ -475,11 +476,11 @@ static bool identifiersEqual(Token *a, Token *b)
 /// @param compiler the compiler with the local variables array
 /// @param name the name of the variable
 /// @return returns
-static int resolveLocal(Compiler *compiler, Token *name)
+static int resolveLocal(Compiler* compiler, Token* name)
 {
     for (int i = compiler->localCount - 1; i >= 0; i--)
     {
-        Local *local = &compiler->locals[i];
+        Local* local = &compiler->locals[i];
         if (identifiersEqual(name, &local->name))
         {
             if (local->depth == -1)
@@ -499,19 +500,18 @@ static int resolveLocal(Compiler *compiler, Token *name)
 /// @param index
 /// @param isLocal
 /// @return returns the index of the upvalue in the upvalue array
-static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal)
+static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal)
 {
     int upvalueCount = compiler->function->upvalueCount;
 
     for (int i = 0; i < upvalueCount; i++)
     {
-        Upvalue *upvalue = &compiler->upvalues[i];
+        Upvalue* upvalue = &compiler->upvalues[i];
 
         if (upvalue->index == index && upvalue->isLocal == isLocal)
         {
             return i;
         }
-
     }
     // checks if there is space for more closed over upvalues
     if (upvalueCount == UINT8_COUNT)
@@ -529,7 +529,7 @@ static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal)
 /// @param compiler
 /// @param name
 /// @return
-static int resolveUpvalue(Compiler *compiler, Token *name)
+static int resolveUpvalue(Compiler* compiler, Token* name)
 {
     if (compiler->enclosing == NULL) return -1;
 
@@ -537,13 +537,13 @@ static int resolveUpvalue(Compiler *compiler, Token *name)
     if (local != -1)
     {
         compiler->enclosing->locals[local].isCaptured = true;
-        return addUpvalue(compiler, (uint8_t) local, true);
+        return addUpvalue(compiler, (uint8_t)local, true);
     }
 
     int upvalue = resolveUpvalue(compiler->enclosing, name);
     if (upvalue != -1)
     {
-        return addUpvalue(compiler, (uint8_t) upvalue, false);
+        return addUpvalue(compiler, (uint8_t)upvalue, false);
     }
 
     return -1;
@@ -556,11 +556,11 @@ static void declareVariable()
     if (current->scopeDepth == 0) return;
 
     //adds the local variable to the compiler
-    Token *name = &parser.previous;
+    Token* name = &parser.previous;
     //checks if there is no local identical to the new local in the current scope
     for (int i = current->localCount - 1; i >= 0; i--)
     {
-        Local *local = &current->locals[i];
+        Local* local = &current->locals[i];
         if (local->depth != -1 && local->depth < current->scopeDepth)
         {
             break;
@@ -604,11 +604,11 @@ static void namedVariable(Token name, bool canAssign)
     if (canAssign && match(TOKEN_EQUAL))
     {
         expression();
-        emitBytes(setOp, (uint8_t) arg);
+        emitBytes(setOp, (uint8_t)arg);
     }
     else
     {
-        emitBytes(getOp, (uint8_t) arg);
+        emitBytes(getOp, (uint8_t)arg);
     }
 }
 
@@ -622,7 +622,8 @@ static void variable(bool canAssign)
 /// @param canAssign
 static void this_(bool canAssign)
 {
-    if (currentClass == NULL) {
+    if (currentClass == NULL)
+    {
         error("Cant use 'this' outside of a class");
         return;
     }
@@ -633,7 +634,7 @@ static void this_(bool canAssign)
 /// parse a variable identifier from the token stream
 /// @param errorMessage the message we want to print if the identifier is not found
 /// @return the index of the constant in the constant table
-static uint8_t parseVariable(const char *errorMessage)
+static uint8_t parseVariable(const char* errorMessage)
 {
     //consumes the identifier token
     consume(TOKEN_IDENTIFIER, errorMessage);
@@ -709,43 +710,43 @@ static void and_(bool canAssign)
 static void binary(bool canAssign)
 {
     TokenType operatorType = parser.previous.type;
-    ParseRule *rule = getRule(operatorType);
-    parsePrecedence((Precedence) (rule->precedence + 1));
+    ParseRule* rule = getRule(operatorType);
+    parsePrecedence((Precedence)(rule->precedence + 1));
 
     switch (operatorType)
     {
-        case TOKEN_PLUS:
-            emitByte(OP_ADD);
-            break;
-        case TOKEN_MINUS:
-            emitByte(OP_SUBTRACT);
-            break;
-        case TOKEN_STAR:
-            emitByte(OP_MULTIPLY);
-            break;
-        case TOKEN_SLASH:
-            emitByte(OP_DIVIDE);
-            break;
-        case TOKEN_BANG_EQUAL:
-            emitBytes(OP_EQUAL, OP_NOT);
-            break;
-        case TOKEN_EQUAL_EQUAL:
-            emitByte(OP_EQUAL);
-            break;
-        case TOKEN_GREATER:
-            emitByte(OP_GREATER);
-            break;
-        case TOKEN_GREATER_EQUAL:
-            emitBytes(OP_LESS, OP_NOT);
-            break;
-        case TOKEN_LESS:
-            emitByte(OP_LESS);
-            break;
-        case TOKEN_LESS_EQUAL:
-            emitBytes(OP_GREATER, OP_NOT);
-            break;
-        default:
-            return; //Unreachable
+    case TOKEN_PLUS:
+        emitByte(OP_ADD);
+        break;
+    case TOKEN_MINUS:
+        emitByte(OP_SUBTRACT);
+        break;
+    case TOKEN_STAR:
+        emitByte(OP_MULTIPLY);
+        break;
+    case TOKEN_SLASH:
+        emitByte(OP_DIVIDE);
+        break;
+    case TOKEN_BANG_EQUAL:
+        emitBytes(OP_EQUAL, OP_NOT);
+        break;
+    case TOKEN_EQUAL_EQUAL:
+        emitByte(OP_EQUAL);
+        break;
+    case TOKEN_GREATER:
+        emitByte(OP_GREATER);
+        break;
+    case TOKEN_GREATER_EQUAL:
+        emitBytes(OP_LESS, OP_NOT);
+        break;
+    case TOKEN_LESS:
+        emitByte(OP_LESS);
+        break;
+    case TOKEN_LESS_EQUAL:
+        emitBytes(OP_GREATER, OP_NOT);
+        break;
+    default:
+        return; //Unreachable
     }
 }
 
@@ -764,12 +765,12 @@ static void dot(bool canAssign)
     consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
     uint8_t name = identifierConstant(&parser.previous);
 
-    if(canAssign && match(TOKEN_EQUAL))
+    if (canAssign && match(TOKEN_EQUAL))
     {
         expression();
         emitBytes(OP_SET_PROPERTY, name);
     }
-    else if(match(TOKEN_LEFT_PAREN))
+    else if (match(TOKEN_LEFT_PAREN))
     {
         uint8_t argCount = argumentList();
         emitBytes(OP_INVOKE, name);
@@ -786,17 +787,17 @@ static void literal(bool canAssign)
 {
     switch (parser.previous.type)
     {
-        case TOKEN_FALSE:
-            emitByte(OP_FALSE);
-            break;
-        case TOKEN_TRUE:
-            emitByte(OP_TRUE);
-            break;
-        case TOKEN_NIL:
-            emitByte(OP_NIL);
-            break;
-        default:
-            return;
+    case TOKEN_FALSE:
+        emitByte(OP_FALSE);
+        break;
+    case TOKEN_TRUE:
+        emitByte(OP_TRUE);
+        break;
+    case TOKEN_NIL:
+        emitByte(OP_NIL);
+        break;
+    default:
+        return;
     }
 }
 
@@ -841,13 +842,12 @@ static void function(FunctionType type)
             defineVariable(constant);
         }
         while (match(TOKEN_COMMA));
-
     }
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after function parameters.");
     consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
     block();
 
-    ObjFunction *function = endCompiler();
+    ObjFunction* function = endCompiler();
     emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
 
     for (int i = 0; i < function->upvalueCount; i++)
@@ -869,7 +869,7 @@ static void method()
     //processes the method body
     FunctionType type = TYPE_METHOD;
 
-    if(parser.previous.length == 4 && memcmp(parser.previous.start, "init", 4) == 0)
+    if (parser.previous.length == 4 && memcmp(parser.previous.start, "init", 4) == 0)
     {
         type = TYPE_INITIALIZER;
     }
@@ -898,7 +898,7 @@ static void classDeclaration()
     //consumes the left brace at the begining of the class
     consume(TOKEN_LEFT_BRACE, "Expect '{' after class name.");
 
-    while(!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
+    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
     {
         method();
     }
@@ -1062,7 +1062,8 @@ static void returnStatement()
     }
     else
     {
-        if(current->type == TYPE_INITIALIZER) {
+        if (current->type == TYPE_INITIALIZER)
+        {
             error("Can't return a value from an initializer");
         }
         expression();
@@ -1098,16 +1099,16 @@ static void synchronize()
         if (parser.previous.type == TOKEN_SEMICOLON) return;
         switch (parser.current.type)
         {
-            case TOKEN_CLASS:
-            case TOKEN_FUN:
-            case TOKEN_VAR:
-            case TOKEN_FOR:
-            case TOKEN_IF:
-            case TOKEN_WHILE:
-            case TOKEN_PRINT:
-            case TOKEN_RETURN:
-                return;
-            default:;
+        case TOKEN_CLASS:
+        case TOKEN_FUN:
+        case TOKEN_VAR:
+        case TOKEN_FOR:
+        case TOKEN_IF:
+        case TOKEN_WHILE:
+        case TOKEN_PRINT:
+        case TOKEN_RETURN:
+            return;
+        default: ;
         }
 
         advance();
@@ -1117,7 +1118,7 @@ static void synchronize()
 /// compiles a declaration
 static void declaration()
 {
-    if(match(TOKEN_CLASS))
+    if (match(TOKEN_CLASS))
     {
         classDeclaration();
     }
@@ -1184,14 +1185,14 @@ static void unary(bool canAssign)
     //Emit the operator instruction
     switch (operatorType)
     {
-        case TOKEN_BANG:
-            emitByte(OP_NOT);
-            break;
-        case TOKEN_MINUS:
-            emitByte(OP_NEGATE);
-            break;
-        default:
-            return; //Unreachable.
+    case TOKEN_BANG:
+        emitByte(OP_NOT);
+        break;
+    case TOKEN_MINUS:
+        emitByte(OP_NEGATE);
+        break;
+    default:
+        return; //Unreachable.
     }
 }
 
@@ -1203,52 +1204,52 @@ static void grouping(bool canAssign)
 }
 
 ParseRule rules[] = {
-        [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
-        [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
-        [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
-        [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
-        [TOKEN_COMMA] = {NULL, NULL, PREC_NONE},
-        [TOKEN_DOT] = {NULL, dot, PREC_CALL},
-        [TOKEN_MINUS] = {unary, binary, PREC_TERM},
-        [TOKEN_PLUS] = {NULL, binary, PREC_TERM},
-        [TOKEN_SEMICOLON] = {NULL, NULL, PREC_NONE},
-        [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
-        [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
-        [TOKEN_BANG] = {unary, NULL, PREC_NONE},
-        [TOKEN_BANG_EQUAL] = {NULL, binary, PREC_COMPARISON},
-        [TOKEN_EQUAL] = {NULL, NULL, PREC_NONE},
-        [TOKEN_EQUAL_EQUAL] = {NULL, binary, PREC_EQUALITY},
-        [TOKEN_GREATER] = {NULL, binary, PREC_COMPARISON},
-        [TOKEN_GREATER_EQUAL] = {NULL, binary, PREC_COMPARISON},
-        [TOKEN_LESS] = {NULL, binary, PREC_COMPARISON},
-        [TOKEN_LESS_EQUAL] = {NULL, binary, PREC_COMPARISON},
-        [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
-        [TOKEN_STRING] = {string, NULL, PREC_NONE},
-        [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
-        [TOKEN_AND] = {NULL, and_, PREC_AND},
-        [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
-        [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},
-        [TOKEN_FALSE] = {literal, NULL, PREC_NONE},
-        [TOKEN_FOR] = {NULL, NULL, PREC_NONE},
-        [TOKEN_FUN] = {NULL, NULL, PREC_NONE},
-        [TOKEN_IF] = {NULL, NULL, PREC_NONE},
-        [TOKEN_NIL] = {literal, NULL, PREC_NONE},
-        [TOKEN_OR] = {NULL, or_, PREC_OR},
-        [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
-        [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
-        [TOKEN_SUPER] = {NULL, NULL, PREC_NONE},
-        [TOKEN_THIS] = {this_, NULL, PREC_NONE},
-        [TOKEN_TRUE] = {literal, NULL, PREC_NONE},
-        [TOKEN_VAR] = {NULL, NULL, PREC_NONE},
-        [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
-        [TOKEN_ERROR] = {NULL, NULL, PREC_NONE},
-        [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
+    [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
+    [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
+    [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
+    [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
+    [TOKEN_COMMA] = {NULL, NULL, PREC_NONE},
+    [TOKEN_DOT] = {NULL, dot, PREC_CALL},
+    [TOKEN_MINUS] = {unary, binary, PREC_TERM},
+    [TOKEN_PLUS] = {NULL, binary, PREC_TERM},
+    [TOKEN_SEMICOLON] = {NULL, NULL, PREC_NONE},
+    [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
+    [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
+    [TOKEN_BANG] = {unary, NULL, PREC_NONE},
+    [TOKEN_BANG_EQUAL] = {NULL, binary, PREC_COMPARISON},
+    [TOKEN_EQUAL] = {NULL, NULL, PREC_NONE},
+    [TOKEN_EQUAL_EQUAL] = {NULL, binary, PREC_EQUALITY},
+    [TOKEN_GREATER] = {NULL, binary, PREC_COMPARISON},
+    [TOKEN_GREATER_EQUAL] = {NULL, binary, PREC_COMPARISON},
+    [TOKEN_LESS] = {NULL, binary, PREC_COMPARISON},
+    [TOKEN_LESS_EQUAL] = {NULL, binary, PREC_COMPARISON},
+    [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
+    [TOKEN_STRING] = {string, NULL, PREC_NONE},
+    [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
+    [TOKEN_AND] = {NULL, and_, PREC_AND},
+    [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
+    [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},
+    [TOKEN_FALSE] = {literal, NULL, PREC_NONE},
+    [TOKEN_FOR] = {NULL, NULL, PREC_NONE},
+    [TOKEN_FUN] = {NULL, NULL, PREC_NONE},
+    [TOKEN_IF] = {NULL, NULL, PREC_NONE},
+    [TOKEN_NIL] = {literal, NULL, PREC_NONE},
+    [TOKEN_OR] = {NULL, or_, PREC_OR},
+    [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
+    [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
+    [TOKEN_SUPER] = {NULL, NULL, PREC_NONE},
+    [TOKEN_THIS] = {this_, NULL, PREC_NONE},
+    [TOKEN_TRUE] = {literal, NULL, PREC_NONE},
+    [TOKEN_VAR] = {NULL, NULL, PREC_NONE},
+    [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
+    [TOKEN_ERROR] = {NULL, NULL, PREC_NONE},
+    [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
 };
 
 /// a wrapper function that returns the precedence rule for a token type
 /// @param type the token type whose precedence needs to be checked
 /// @return     returns the parse rule for that token type
-static ParseRule *getRule(TokenType type)
+static ParseRule* getRule(TokenType type)
 {
     return &rules[type];
 }
@@ -1257,7 +1258,7 @@ static ParseRule *getRule(TokenType type)
 /// @param source the source code that needs to be compiled
 /// @param chunk  the bytecode chunk we feed teh tokenized source code to
 /// @return       returns whether the code had error in it
-ObjFunction *compile(const char *source)
+ObjFunction* compile(const char* source)
 {
     //initializes the scanner with the source string
     initScanner(source);
@@ -1276,7 +1277,7 @@ ObjFunction *compile(const char *source)
         declaration();
     }
 
-    ObjFunction *function = endCompiler();
+    ObjFunction* function = endCompiler();
     return parser.hadError ? NULL : function;
 }
 

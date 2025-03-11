@@ -52,29 +52,29 @@ typedef struct
     int lineCount;
     int lineCapacity;
 
-    uint8_t *code;
-    int *lines;
+    uint8_t* code;
+    int* lines;
     ValueArray constants;
 } Chunk;
 
 /// @brief 
 /// @param chunk 
-void initChunk(Chunk *chunk);
+void initChunk(Chunk* chunk);
 
 /// @brief 
 /// @param chunk 
 /// @param byte 
 /// @param line
-void writeChunk(Chunk *chunk, uint8_t byte, int line);
+void writeChunk(Chunk* chunk, uint8_t byte, int line);
 
 /// @brief 
 /// @param chunk 
-void freeChunk(Chunk *chunk);
+void freeChunk(Chunk* chunk);
 
 /// adds a constant to the constant pool via discrete function for orderly operation
 /// @param chunk
 /// @param value
 /// @returns the index of the appended constant in the pool
-int addConstant(Chunk *chunk, Value value);
+int addConstant(Chunk* chunk, Value value);
 
 #endif

@@ -28,9 +28,9 @@ static void repl()
 /// the function that opens the file, allocates memory to a string the size of the file and reads it to the string
 /// @param path the file path that needs to be interpreted
 /// @return the content of the file
-static char *readFile(const char *path)
+static char* readFile(const char* path)
 {
-    FILE *file = fopen(path, "rb");
+    FILE* file = fopen(path, "rb");
 
     //checks if the file was successfully opened
     if (file == NULL)
@@ -44,7 +44,7 @@ static char *readFile(const char *path)
     rewind(file);
 
     //allocates memory for the entire file and if it fails to do so exits
-    char *buffer = (char *) malloc(fileSize + 1);
+    char* buffer = (char*)malloc(fileSize + 1);
     if (buffer == NULL)
     {
         fprintf(stderr, "Not enough memory to read \"%s\"\n", path);
@@ -68,11 +68,10 @@ static char *readFile(const char *path)
 /// the function gets a file path, reads it and interprets it
 /// @param path 
 /// @return will returns exit code if there will be errors (65-for compilation error, 70-for runtime error)
-static char *runFile(const char *path)
+static char* runFile(const char* path)
 {
-
     //opens the file and reads it to a dynamically allocated string
-    char *source = readFile(path);
+    char* source = readFile(path);
 
     //interprets the file using the string
     InterpretResult result = interpret(source);
@@ -86,7 +85,7 @@ static char *runFile(const char *path)
         exit(70);
 }
 
-int main(int argc, const char *argv[])
+int main(int argc, const char* argv[])
 {
     //initializes the VM before injecting the code
     initVM();
@@ -94,10 +93,12 @@ int main(int argc, const char *argv[])
     if (argc == 1)
     {
         repl();
-    } else if (argc == 2)
+    }
+    else if (argc == 2)
     {
         runFile(argv[1]);
-    } else
+    }
+    else
     {
         fprintf(stderr, "Usage: clox [path]\n");
         exit(64);

@@ -11,9 +11,9 @@
 
 typedef struct
 {
-    ObjClosure *closure;
-    uint8_t *ip;
-    Value *slots;
+    ObjClosure* closure;
+    uint8_t* ip;
+    Value* slots;
 } CallFrame;
 
 typedef struct
@@ -21,14 +21,14 @@ typedef struct
     CallFrame frames[FRAMES_MAX];
     int frameCount;
     Value stack[STACK_MAX];
-    Value *stackTop;
+    Value* stackTop;
     Table strings;
     Table globals;
-    ObjString *initString;
+    ObjString* initString;
     ObjUpvalue* openUpvalues;
     size_t bytesAllocated;
     size_t nextGC;
-    Obj *objects;
+    Obj* objects;
     int grayCount;
     int grayCapacity;
     Obj** grayStack;
@@ -51,7 +51,7 @@ void freeVM();
 
 /// interprets a given chunk to the VM and returns the interpreted result
 /// @return the interpreted result of the given chunk(need to change)
-InterpretResult interpret(const char *source);
+InterpretResult interpret(const char* source);
 
 /// pushes a value onto the VM stack
 /// @param val the value that needs to be pushed
