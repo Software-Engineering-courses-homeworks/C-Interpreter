@@ -2,11 +2,62 @@
 #define VALUE_H
 
 #include <stdio.h>
+#include <string.h>
 
 #include "common.h"
 
 typedef struct Obj Obj;
 typedef struct ObjString ObjString;
+
+#ifdef NAN_BOXING
+
+// Mask to extract the sign bit of a 64-bit integer (most significant bit)
+#define SIGN_BIT ((uint64_t)0x8000000000000000)
+
+// defines the Quiet NaN bits
+#define QNAN ((uint64_t)0x7ffc000000000000)
+
+//type bits for the singleton types
+#define TAG_NIL     1      //01.
+#define TAG_FALSE   2      //10.
+#define TAG_TRUE    3      //11.
+
+typedef uint64_t Value;
+
+//macros to check the type of the NaN value
+#define IS_BOOL(value)     ((value) | 1) == TRUE_VAL
+#define IS_NIL(value)      ((value) == NIL_VAL)
+#define IS_NUMBER(value)   (((value) & QNAN) != QNAN)
+#define IS_OBJ(value)      ((value) & (QNAN | SIGN_BIT)) == (QNAN | SIGN_BIT)
+
+//macros to cast teh NaN value
+#define AS_BOOL(value)     ((value) == TRUE_VAL)
+#define AS_NUMBER(value)   valueToNum(value)
+#define AS_OBJ(value)      ((Obj*)(uintptr_t)((value) & ~(SIGN_BIT | QNAN)))
+
+//macros to convert to a NaN value
+#define BOOL_VAL(b)         ((b) ? TRUE_VAL : FALSE_VAL)
+#define FALSE_VAL           ((Value)(uint64_t)(QNAN | TAG_FALSE))
+#define TRUE_VAL            ((Value)(uint64_t)(QNAN | TAG_TRUE))
+#define NUMBER_VAL(num)     numToValue(num)
+#define NIL_VAL             ((Value)(uint64_t)(QNAN|TAG_NIL))
+#define OBJ_VAL(obj)        ((Value)(SIGN_BIT | QNAN | (uint64_t)(uintptr_t)(obj)))
+
+static inline double valueToNum(Value value)
+{
+    double num;
+    memcpy(&num, &value, sizeof(num));
+    return num;
+}
+
+static inline Value numToValue(double num)
+{
+    Value value;
+    memcpy(&value, &num, sizeof(double));
+    return value;
+}
+
+#else
 
 typedef enum
 {
@@ -41,6 +92,8 @@ typedef struct
 #define NIL_VAL           ((Value){VAL_NIL, {.number = 0}})
 #define NUMBER_VAL(value) ((Value){VAL_NUMBER,{.number = value}})
 #define OBJ_VAL(object)   ((Value){VAL_OBJ,{.obj = (Obj*)object}})
+
+#endif
 
 typedef struct
 {
