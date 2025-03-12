@@ -1,0 +1,3 @@
+C:\Users\test\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -E rm -f CMakeFiles\C-Interpreter.dir/objects.a
+C:\Users\test\AppData\Local\Programs\CLion\bin\mingw\bin\ar.exe qc CMakeFiles\C-Interpreter.dir/objects.a @CMakeFiles\C-Interpreter.dir\objects1.rsp
+C:\Users\test\AppData\Local\Programs\CLion\bin\mingw\bin\gcc.exe -g -Wl,--whole-archive CMakeFiles\C-Interpreter.dir/objects.a -Wl,--no-whole-archive -o C-Interpreter.exe -Wl,--out-implib,libC-Interpreter.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\C-Interpreter.dir\linkLibs.rsp

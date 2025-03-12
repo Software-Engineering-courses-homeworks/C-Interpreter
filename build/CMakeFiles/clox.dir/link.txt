@@ -1,0 +1,3 @@
+"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E rm -f CMakeFiles\clox.dir/objects.a
+C:\msys64\mingw64\bin\ar.exe qc CMakeFiles\clox.dir/objects.a @CMakeFiles\clox.dir\objects1.rsp
+C:\msys64\mingw64\bin\gcc.exe -g -Wl,--whole-archive CMakeFiles\clox.dir/objects.a -Wl,--no-whole-archive -o clox.exe -Wl,--out-implib,libclox.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\clox.dir\linkLibs.rsp

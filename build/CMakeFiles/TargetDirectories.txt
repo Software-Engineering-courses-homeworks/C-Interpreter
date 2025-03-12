@@ -1,0 +1,3 @@
+C:/Users/test/CLionProjects/C-Interpreter/build/CMakeFiles/clox.dir
+C:/Users/test/CLionProjects/C-Interpreter/build/CMakeFiles/edit_cache.dir
+C:/Users/test/CLionProjects/C-Interpreter/build/CMakeFiles/rebuild_cache.dir
