@@ -42,13 +42,17 @@ ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method)
     return bound;
 }
 
-///
-/// @param name
-/// @return
+/// Creates a new class object and initializes its properties.
+/// @param name The name of the class
+/// @return  The newly created ObjClass object.
 ObjClass* newClass(ObjString* name)
 {
+    // Allocate memory for a new ObjClass object.
     ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+
     klass->name = name;
+
+    // Initialize the class's method table and retuns it
     initTable(&klass->methods);
     return klass;
 }
