@@ -1211,16 +1211,19 @@ static void returnStatement()
     {
         error("Can't return from top-level code.");
     }
+    // If the return statement is just a semicolon (i.e., no return value), emit a return bytecode.
     if (match(TOKEN_SEMICOLON))
     {
         emitReturn();
     }
     else
     {
+        // If the current function is an initializer, return values are not allowed.
         if (current->type == TYPE_INITIALIZER)
         {
             error("Can't return a value from an initializer");
         }
+        //otherwise, compile the return expression
         expression();
         consume(TOKEN_SEMICOLON, "Expected ';' after return value.");
         emitByte(OP_RETURN);
@@ -1273,55 +1276,66 @@ static void synchronize()
 /// compiles a declaration
 static void declaration()
 {
+    // Check if the declaration is for a class and compile it.
     if (match(TOKEN_CLASS))
     {
         classDeclaration();
     }
+    // Check if the declaration is for a function and compile it.
     else if (match(TOKEN_FUN))
     {
         funDeclaration();
     }
+    // Check if the declaration is for a variable and compile it.
     else if (match(TOKEN_VAR))
     {
         varDeclaration();
     }
+    // If it's not a class, function, or variable declaration, treat it as a statement.
     else
     {
         statement();
     }
-
+    // If the parser is in panic mode due to a syntax error, attempt to synchronize.
     if (parser.panicMode) synchronize();
 }
 
 /// compiles a statement
 static void statement()
 {
+    //checks if its a print statement and compiles it
     if (match(TOKEN_PRINT))
     {
         printStatement();
     }
+    //checks if the statement is a for loop and compiles it
     else if (match(TOKEN_FOR))
     {
         forStatement();
     }
+    //checks if it's an if condition and compiles it
     else if (match(TOKEN_IF))
     {
         ifStatement();
     }
+    //checks if it is a while loop and compiles it
     else if (match(TOKEN_WHILE))
     {
         whileStatement();
     }
+    // Check if the statement is a block `(...)` and handle its scope.
     else if (match(TOKEN_LEFT_BRACE))
     {
         beginScope();
         block();
         endScope();
     }
+    // Check if the statement is a return statement and compile it.
     else if (match(TOKEN_RETURN))
     {
         returnStatement();
     }
+    // If none of the above, assume it's an expression statement.
     else
     {
         expressionStatement();
