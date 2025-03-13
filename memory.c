@@ -82,6 +82,8 @@ void markValue(Value value)
     if (IS_OBJ(value))markObject(AS_OBJ(value));
 }
 
+///  Marks all values in a ValueArray to prevent them from being garbage collected.
+/// @param array a pointer to the value array we want to mark
 static void markArray(ValueArray* array)
 {
     for (int i = 0; i < array->count; i++)
@@ -90,8 +92,8 @@ static void markArray(ValueArray* array)
     }
 }
 
-///
-/// @param object
+///Marks an object and its references as reachable during garbage collection.
+/// @param object The object to blacken
 static void blackenObject(Obj* object)
 {
     // GC Logging
@@ -101,11 +103,15 @@ static void blackenObject(Obj* object)
     printf("\n");
 #endif
 
+    // Determine the object's type and mark any references it holds.
     switch (object->type)
     {
     case OBJ_CLOSURE:
+        // Mark the function associated with the closure.
         ObjClosure* closure = (ObjClosure*)object;
         markObject((Obj*)closure->function);
+
+        // Mark all captured upvalues in the closure.
         for (int i = 0; i < closure->upvalueCount; i++)
         {
             markObject((Obj*)closure->upvalues[i]);
@@ -113,20 +119,24 @@ static void blackenObject(Obj* object)
         break;
     case OBJ_CLASS:
         {
+            // Mark the class name string.
             ObjClass* klass = (ObjClass*)object;
             markObject((Obj*)klass->name);
             break;
         }
     case OBJ_FUNCTION:
+        // Mark the function name and its constant pool.
         ObjFunction* function = (ObjFunction*)object;
         markObject((Obj*)function->name);
         markArray(&function->chunk.constants);
         break;
     case OBJ_UPVALUE:
+        // Mark the closed-over value in the upvalue.
         markValue(((ObjUpvalue*)object)->closed);
         break;
     case OBJ_INSTANCE:
         {
+            // Mark the instance's class and its fields table.
             ObjInstance* instance = (ObjInstance*)object;
             markObject((Obj*)instance->klass);
             markTable(&instance->fields);
@@ -134,6 +144,7 @@ static void blackenObject(Obj* object)
         }
     case OBJ_BOUND_METHOD:
         {
+            // Mark the receiver object and the bound method.
             ObjBoundMethod* bound = (ObjBoundMethod*)object;
             markValue(bound->reciever);
             markObject((Obj*)bound->method);
@@ -206,7 +217,7 @@ static void freeObject(Obj* object)
     }
 }
 
-///
+/// Marks all root objects as reachable for garbage collection
 static void markRoots()
 {
     //
@@ -237,7 +248,7 @@ static void markRoots()
     markObject((Obj*)vm.initString);
 }
 
-///
+/// Traces and processes all gray objects during the mark phase of garbage collection.
 static void traceReferences()
 {
     while (vm.grayCount > 0)
@@ -247,7 +258,7 @@ static void traceReferences()
     }
 }
 
-///
+/// Sweeps through the list of objects and frees those that were not marked during the GC mark phase.
 static void sweep()
 {
     Obj* previous = NULL;
@@ -267,21 +278,24 @@ static void sweep()
         {
             Obj* unreached = object;
             object = object->next;
+
+            // Adjust the linked list, removing the unmarked object.
             if (previous != NULL)
             {
                 previous->next = object;
             }
-            else
+            else // If it's the first object, update the list head.
             {
                 vm.objects = object;
             }
 
+            // Free the memory used by the unreached object.
             freeObject(unreached);
         }
     }
 }
 
-///
+/// Collects garbage by running the mark-and-sweep cycle of the garbage collector.
 void collectGarbage()
 {
     //GC logging
@@ -316,6 +330,8 @@ void collectGarbage()
 void freeObjects()
 {
     Obj* object = vm.objects;
+
+    // Traverse through all objects in the object's linked list and free them.
     while (object != NULL)
     {
         Obj* next = object->next;
