@@ -218,6 +218,8 @@ void markTable(Table* table)
     }
 }
 
+///
+/// @param table 
 void tableRemoveWhite(Table* table)
 {
     for (int i = 0; i < table->capacity; i++)
