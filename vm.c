@@ -42,12 +42,22 @@ static void runtimeError(const char* format, ...)
     //prints a new line to separate the error message
     fputs("\n", stderr);
 
+
+    // Iterate through the active call frames in the VM to print the call stack.
     for (int i = vm.frameCount - 1; i >= 0; i--)
     {
+        // Get the current call frame.
         CallFrame* frame = &vm.frames[i];
+
+        // Retrieve the function associated with the current call frame.
         ObjFunction* function = frame->closure->function;
+
+        // Calculate the current instruction index in the function's bytecode.
         size_t instruction = frame->ip - function->chunk.code - 1;
+
         fprintf(stderr, "[line %d] in ", function->chunk.lines[instruction]);
+
+        // Print the function name if available, or "script" for the top-level code.
         if (function->name == NULL)
         {
             fprintf(stderr, "script\n");
@@ -57,18 +67,23 @@ static void runtimeError(const char* format, ...)
             fprintf(stderr, "%s()\n", function->name->chars);
         }
     }
-
+    // Reset the VM stack, as the error has been handled.
     resetStack();
 }
 
-///
-/// @param name
-/// @param function
+/// Defines a native function and registers it in the global symbol table.
+/// @param name The name of the native function as a string.
+/// @param function The native function to be registered.
 static void defineNative(const char* name, NativeFn function)
 {
+    // Push the function name  and the function objects to the stack
     push(OBJ_VAL(copyString(name, (int) strlen(name))));
     push(OBJ_VAL(newNative(function)));
+
+    // Store the function in the global table, associating it with the name.
     tableSet(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
+
+    //pop the function and his name out of the stack, as they have been stored in the globals table
     pop();
     pop();
 }
@@ -119,7 +134,7 @@ Value pop()
     return *vm.stackTop;
 }
 
-///
+/// Peeks a value from the stack without popping it.
 /// @param distance how far down from the top to look
 /// @return         returns a value from the stack without popping it
 static Value peek(int distance)
@@ -127,10 +142,10 @@ static Value peek(int distance)
     return vm.stackTop[-1 - distance];
 }
 
-///
-/// @param closure
-/// @param argCount
-/// @return
+/// Calls a function closure with the specified argument count.
+/// @param closure The function closure to be called
+/// @param argCount The number of arguments passed to the closure.
+/// @return true if the function call was successfull, false igf not.
 static bool call(ObjClosure* closure, int argCount)
 {
     // checks if the number of arguments passed to the closure is correct
@@ -155,12 +170,13 @@ static bool call(ObjClosure* closure, int argCount)
     return true;
 }
 
-///
-/// @param callee
-/// @param argCount
-/// @return
+/// Calls a function or method represented by a `Value` object
+/// @param callee the object to be called.
+/// @param argCount The number of arguments passed to the callee.
+/// @return true if the call is successful, false otherwise.
 static bool callValue(Value callee, int argCount)
 {
+    // Check if the callee is an object
     if (IS_OBJ(callee))
     {
         switch (OBJ_TYPE(callee))
@@ -203,20 +219,21 @@ static bool callValue(Value callee, int argCount)
     return false;
 }
 
-///
-/// @param klass
-/// @param name
-/// @param argCount
-/// @return
+/// Invokes a method from a class based on the method name.
+/// @param klass The class object in which the method is defined.
+/// @param name The name of the method to invoke.
+/// @param argCount The number of arguments passed to the method.
+/// @return `true` if the method was successfully called, `false` otherwise.
 static bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount)
 {
     Value method;
+    // Attempt to retrieve the method from the class's method table.
     if (!tableGet(&klass->methods, name, &method))
     {
         runtimeError("Undefined property '%s'.", name->chars);
         return false;
     }
-
+    // If the method is found, call it as a closure with the provided arguments.
     return call(AS_CLOSURE(method), argCount);
 }
 
@@ -267,8 +284,8 @@ static bool bindMethod(ObjClass* klass, ObjString* name)
     return true;
 }
 
-///
-/// @param local
+/// Captures a local variable as an upvalue, allowing it to be closed over by a closure.
+/// @param local The local variable (in the stack) to be captured as an upvalue.
 /// @return      an upvalue representing the captured local variable
 static ObjUpvalue* captureUpvalue(Value* local)
 {
@@ -304,8 +321,8 @@ static ObjUpvalue* captureUpvalue(Value* local)
     return createdUpvalue;
 }
 
-///
-/// @param last
+/// Closes all upvalues that are currently open and have a location before the specified last pointer.
+/// @param last The stack position (pointer) up to which the upvalues should be closed.
 static void closeUpvalues(Value* last)
 {
     while (vm.openUpvalues != NULL && vm.openUpvalues->location >= last)
@@ -609,18 +626,24 @@ push(valueType(a op b)); \
             }
         case OP_CLOSURE:
             {
+                // Fetch the constant (function) to create a closure from the current chunk of bytecode.
                 ObjFunction* function = AS_FUNCTION(READ_CONSTANT());
+
+                // Create a new closure for the function
                 ObjClosure* closure = newClosure(function);
                 push(OBJ_VAL(closure));
+
+                // For each upvalue handle its closure.
                 for (int i = 0; i < closure->upvalueCount; i++)
                 {
                     uint8_t isLocal = READ_BYTE();
                     uint8_t index = READ_BYTE();
+                    // If the upvalue is local, capture it from the current frame’s slots.
                     if (isLocal)
                     {
                         closure->upvalues[i] = captureUpvalue(frame->slots + index);
                     }
-                    else
+                    else // Otherwise, it's an upvalue from the enclosing closure. Copy it.
                     {
                         closure->upvalues[i] = frame->closure->upvalues[index];
                     }
@@ -650,6 +673,7 @@ push(valueType(a op b)); \
             break;
         case OP_GET_PROPERTY:
             {
+                // Check if the value at the top of the stack is an instance. Properties are only available on instances.
                 if (!IS_INSTANCE(peek(0)))
                 {
                     runtimeError("Only instances have properties.");
@@ -659,12 +683,14 @@ push(valueType(a op b)); \
                 ObjString* name = READ_STRING();
 
                 Value value;
+                // Try to get the property value from the instance's fields.
                 if (tableGet(&instance->fields, name, &value))
                 {
                     pop();
                     push(value);
                     break;
                 }
+                // If the property doesn't exist in the instance's fields, try binding a method from the class.
                 if (!bindMethod(instance->klass, name))
                 {
                     return INTERPRET_RUNTIME_ERROR;
@@ -679,12 +705,16 @@ push(valueType(a op b)); \
             }
         case OP_INHERIT:
             {
+                // Get the value of the superclass, which is located at the second-to-top position on the stack.
                 Value superclass = peek(1);
+
+                // Check if the value of the superclass is actually a class. If not, show a runtime error.
                 if (!IS_CLASS(superclass))
                 {
                     runtimeError("Superclass must be a class.");
                     return INTERPRET_RUNTIME_ERROR;
                 }
+
                 ObjClass* subclass = AS_CLASS(peek(0));
                 tableAddAll(&AS_CLASS(superclass)->methods, &subclass->methods);
                 pop();
