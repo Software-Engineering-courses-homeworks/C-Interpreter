@@ -6,8 +6,10 @@
 #include "value.h"
 #include "table.h"
 
+// A macro to cast a Value to an Obj pointer
 #define OBJ_TYPE(value)         (AS_OBJ(value)->type)
 
+// A macro to check if a Value is of a certain type
 #define IS_STRING(value)        isObjType(value, OBJ_STRING)
 #define IS_FUNCTION(value)      isObjType(value, OBJ_FUNCTION)
 #define IS_NATIVE(value)        isObjType(value, OBJ_NATIVE)
@@ -16,6 +18,7 @@
 #define IS_INSTANCE(value)      isObjType(value, OBJ_INSTANCE)
 #define IS_BOUND_METHOD(value)  isObjType(value, OBJ_BOUND_METHOD)
 
+// A macro to cast a Value to a certain Obj pointer
 #define AS_STRING(value)        ((ObjString*)AS_OBJ(value))
 #define AS_CSTRING(value)       (((ObjString*)AS_OBJ(value))->chars)
 #define AS_FUNCTION(value)      ((ObjFunction*)AS_OBJ(value))
@@ -25,6 +28,7 @@
 #define AS_INSTANCE(value)      ((ObjInstance*)AS_OBJ(value))
 #define AS_BOUND_METHOD(value)  ((ObjBoundMethod*)AS_OBJ(value))
 
+// A macro to create a Value from an Obj pointer
 typedef enum
 {
     OBJ_BOUND_METHOD,
@@ -37,6 +41,7 @@ typedef enum
     OBJ_UPVALUE,
 } ObjType;
 
+// The base object struct
 struct Obj
 {
     ObjType type;
@@ -54,14 +59,17 @@ typedef struct
     ObjString* name;
 } ObjFunction;
 
+// A native function is a function that is implemented in C
 typedef Value (*NativeFn)(int argCount, Value* args);
 
+// A native function object
 typedef struct
 {
     Obj obj;
     NativeFn function;
 } ObjNative;
 
+// A string object
 struct ObjString
 {
     Obj obj;
@@ -70,6 +78,8 @@ struct ObjString
     uint32_t hash;
 };
 
+// An Upvalue object
+// An upvalue is a reference to a variable that has been closed over by a closure
 typedef struct ObjUpvalue
 {
     Obj obj;
@@ -78,6 +88,7 @@ typedef struct ObjUpvalue
     struct ObjUpvalue* next;
 } ObjUpvalue;
 
+// A closure object
 typedef struct
 {
     Obj obj;
@@ -86,6 +97,7 @@ typedef struct
     int upvalueCount;
 } ObjClosure;
 
+// A class object
 typedef struct
 {
     Obj obj;
@@ -93,6 +105,7 @@ typedef struct
     Table methods;
 } ObjClass;
 
+// An instance object
 typedef struct
 {
     Obj* obj;
@@ -100,6 +113,7 @@ typedef struct
     Table fields;
 } ObjInstance;
 
+// A bound method object
 typedef struct
 {
     Obj obj;
@@ -127,6 +141,10 @@ ObjString* copyString(const char* chars, int length);
 
 void printObject(Value value);
 
+/// an inline function to check if a value is of a certain type
+/// @param value    the value to check
+/// @param type     the type of the object
+/// @return         true if the value is of the given type, false otherwise
 static inline bool isObjType(Value value, ObjType type)
 {
     return IS_OBJ(value) && AS_OBJ(value)->type == type;
