@@ -199,12 +199,19 @@ int disassembleInstruction(Chunk* chunk, int offset)
     case OP_SET_UPVALUE:
         return byteInstruction("OP_SET_UPVALUE", chunk, offset);
     case OP_CLOSURE:
+        // Move to the next byte to read the constant index.
         offset++;
         uint8_t constant = chunk->code[offset++];
+
+        // Print the OP_CLOSURE instruction with its associated constant index.
         printf("%-16s %4d ", "OP_CLOSURE", constant);
+
+        // Print the function object associated with the constant index.
         printValue(chunk->constants.values[constant]);
         printf("\n");
         ObjFunction* function = AS_FUNCTION(chunk->constants.values[constant]);
+
+        // Iterate over the function's upvalues and print their details.
         for (int j = 0; j < function->upvalueCount; j++)
         {
             int isLocal = chunk->code[offset++];
