@@ -4,7 +4,7 @@
 #include "vm.h"
 
 /// initializes a chunk
-/// @param chunk    a pointer to a chunk struct
+/// @param chunk a pointer to a chunk struct
 void initChunk(Chunk* chunk)
 {
     //initializes the struct values to be those of an empty, uninitialized array

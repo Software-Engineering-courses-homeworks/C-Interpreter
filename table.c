@@ -25,10 +25,10 @@ void freeTable(Table* table)
 }
 
 /// gets the entry array from the hash table in addition to its capacity and a key and searches for the entry if it exists
-/// @param entries the entry array
+/// @param entries  the entry array
 /// @param capacity the table's capacity
-/// @param key the key we want to find
-/// @return a pointer to the entry in the array that fits the given key
+/// @param key      the key we want to find
+/// @return         a pointer to the entry in the array that fits the given key
 static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
 {
     uint32_t index = key->hash & (capacity - 1);
@@ -63,10 +63,10 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString* key)
 }
 
 /// the function gets a table, key and value and sets the value pointer value as the saved one in the key
-/// @param table the hash table
-/// @param key the key
-/// @param value the return value
-/// @return true if the key ahs been found, false otherwise
+/// @param table    the hash table
+/// @param key      the key
+/// @param value    the return value
+/// @return         true if the key ahs been found, false otherwise
 bool tableGet(Table* table, ObjString* key, Value* value)
 {
     //if the table isn't initialized, return false
@@ -81,6 +81,9 @@ bool tableGet(Table* table, ObjString* key, Value* value)
     return true;
 }
 
+/// Increases the size of a table
+/// @param table    the table that needs to be resized
+/// @param capacity the new capacity of the table
 static void adjustCapacity(Table* table, int capacity)
 {
     //allocates memory for the entry array
@@ -115,10 +118,10 @@ static void adjustCapacity(Table* table, int capacity)
 }
 
 /// the function gets a key/value pair and adds it to the hash table
-/// @param table the VM hash table
-/// @param key the key string
-/// @param value the hash value
-/// @return true if the new entry was added, false otherwise
+/// @param table    the VM hash table
+/// @param key      the key string
+/// @param value    the hash value
+/// @return         true if the new entry was added, false otherwise
 bool tableSet(Table* table, ObjString* key, Value value)
 {
     if (table->count + 1 > table->capacity * TABLE_MAX_LOAD)
@@ -141,9 +144,9 @@ bool tableSet(Table* table, ObjString* key, Value value)
 }
 
 /// the function gets a table and a key and deletes it form the table
-/// @param table the hash table
-/// @param key the key that needs to be removed
-/// @return true if the deletion was successful, false otherwise
+/// @param table    the hash table
+/// @param key      the key that needs to be removed
+/// @return         true if the deletion was successful, false otherwise
 bool tableDelete(Table* table, ObjString* key)
 {
     if (table->count == 0) return false;
@@ -160,7 +163,7 @@ bool tableDelete(Table* table, ObjString* key)
 
 /// transfers values from one hash table to another
 /// @param from the origin table
-/// @param to the destination table
+/// @param to   the destination table
 void tableAddAll(Table* from, Table* to)
 {
     for (int i = 0; i < from->capacity; i++)
@@ -174,11 +177,11 @@ void tableAddAll(Table* from, Table* to)
 }
 
 /// The function checks if the string that was recieved exists in the hash table
-/// @param table the table we seek in
-/// @param chars the string we seek
-/// @param length the string's length
-/// @param hash hash function
-/// @return a pointer to the string if it exists in the table
+/// @param table    the table we seek in
+/// @param chars    the string we seek
+/// @param length   the string's length
+/// @param hash     hash function
+/// @return         a pointer to the string if it exists in the table
 ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t hash)
 {
     if (table->count == 0) return NULL;
@@ -204,7 +207,7 @@ ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t
 }
 
 /// Marks all keys and values in the given table to prevent them being collected as garbage
-/// @param table
+/// @param table the table that needs to be marked for the GC
 void markTable(Table* table)
 {
     //Iterate through all entries in the table
@@ -218,8 +221,8 @@ void markTable(Table* table)
     }
 }
 
-///
-/// @param table 
+/// Removes all white entries from the table
+/// @param table the table that needs to be cleaned
 void tableRemoveWhite(Table* table)
 {
     for (int i = 0; i < table->capacity; i++)

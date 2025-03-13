@@ -42,6 +42,9 @@ ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method)
     return bound;
 }
 
+///
+/// @param name
+/// @return
 ObjClass* newClass(ObjString* name)
 {
     ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
@@ -82,6 +85,9 @@ ObjFunction* newFunction()
     return function;
 }
 
+/// 
+/// @param klass 
+/// @return 
 ObjInstance* newInstance(ObjClass* klass)
 {
     ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
@@ -140,7 +146,7 @@ static uint32_t hashString(char* key, int length)
 /// The function receives an array of characters and a length, and returns a new string from the array
 /// @param chars
 /// @param length
-/// @return       a new string
+/// @return         a new string
 ObjString* takeString(char* chars, int length)
 {
     uint32_t hash = hashString(chars, length);
@@ -159,7 +165,7 @@ ObjString* takeString(char* chars, int length)
 /// The function copies a string from a given character array into a new allocated memory location
 /// @param chars
 /// @param length
-/// @return       a new string
+/// @return         a new string
 ObjString* copyString(const char* chars, int length)
 {
     // hashes the new string before caching

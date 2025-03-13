@@ -27,7 +27,7 @@ static void repl()
 
 /// the function that opens the file, allocates memory to a string the size of the file and reads it to the string
 /// @param path the file path that needs to be interpreted
-/// @return the content of the file
+/// @return     the content of the file
 static char* readFile(const char* path)
 {
     FILE* file = fopen(path, "rb");
@@ -66,8 +66,8 @@ static char* readFile(const char* path)
 }
 
 /// the function gets a file path, reads it and interprets it
-/// @param path 
-/// @return will returns exit code if there will be errors (65-for compilation error, 70-for runtime error)
+/// @param path the file path for the file that needs to be interpreted
+/// @return     will returns exit code if there will be errors (65-for compilation error, 70-for runtime error)
 static char* runFile(const char* path)
 {
     //opens the file and reads it to a dynamically allocated string
@@ -85,6 +85,7 @@ static char* runFile(const char* path)
         exit(70);
 }
 
+/// the main function that runs the program
 int main(int argc, const char* argv[])
 {
     //initializes the VM before injecting the code

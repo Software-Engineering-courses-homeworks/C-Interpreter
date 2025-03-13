@@ -6,7 +6,7 @@
 #include "object.h"
 
 /// @brief the function initializes the array of values
-/// @param array 
+/// @param array the array that needs to be initialized
 void initValueArray(ValueArray* array)
 {
     array->values = NULL;
@@ -15,8 +15,8 @@ void initValueArray(ValueArray* array)
 }
 
 /// @brief The functions writes a new element into the array
-/// @param array 
-/// @param value 
+/// @param array the array that needs to be appended
+/// @param value the value that needs to be appended
 void writeValueArray(ValueArray* array, Value value)
 {
     //checks if the array needs to be bigger inorder to add a new element
@@ -32,7 +32,7 @@ void writeValueArray(ValueArray* array, Value value)
 }
 
 /// @brief The function releases all the memory used by the array
-/// @param array 
+/// @param array the array that needs to be freed
 void freeValueArray(ValueArray* array)
 {
     FREE_ARRAY(Value, array->values, array->capacity);
@@ -40,7 +40,7 @@ void freeValueArray(ValueArray* array)
 }
 
 /// @brief prints the value
-/// @param value 
+/// @param value the value that needs to be printed
 void printValue(Value value)
 {
     #ifdef NAN_BOXING
@@ -80,9 +80,9 @@ void printValue(Value value)
 }
 
 /// the function checks if the two values that were received are the same
-/// @param a
-/// @param b
-/// @return true - the values are the same. false - not the same
+/// @param a    the first value
+/// @param b    the second value
+/// @return     true - the values are the same. false - not the same
 bool valuesEqual(Value a, Value b)
 {
     #ifdef NAN_BOXING

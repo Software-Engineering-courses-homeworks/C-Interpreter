@@ -14,6 +14,7 @@
 
 #endif
 
+// a struct to hold the current and previous parsed tokens
 typedef struct
 {
     Token current;
@@ -22,6 +23,7 @@ typedef struct
     bool panicMode;
 } Parser;
 
+// a struct to hold the precedence of the operators
 typedef enum
 {
     PREC_NONE,
@@ -37,8 +39,10 @@ typedef enum
     PREC_PRIMARY
 } Precedence;
 
+// a function pointer to parse the prefix and infix expressions
 typedef void (*ParseFn)(bool canAssign);
 
+// a struct to hold the rules for parsing the expressions
 typedef struct
 {
     ParseFn prefix;
@@ -46,6 +50,7 @@ typedef struct
     Precedence precedence;
 } ParseRule;
 
+// a struct to hold the local variables
 typedef struct
 {
     Token name;
@@ -53,12 +58,14 @@ typedef struct
     bool isCaptured;
 } Local;
 
+// a struct to hold the upvalues
 typedef struct
 {
     uint8_t index;
     bool isLocal;
 } Upvalue;
 
+// a struct to hold the function types
 typedef enum
 {
     TYPE_FUNCTION,
@@ -67,6 +74,7 @@ typedef enum
     TYPE_INITIALIZER,
 } FunctionType;
 
+// a struct to hold the compilers in a linked list
 typedef struct Compiler
 {
     struct Compiler* enclosing;
@@ -78,12 +86,14 @@ typedef struct Compiler
     int scopeDepth;
 } Compiler;
 
+// a struct for a linked list of class compilers
 typedef struct ClassCompiler
 {
     struct ClassCompiler* enclosing;
     bool hasSuperClass;
 } ClassCompiler;
 
+// global variables
 Parser parser;
 Compiler* current = NULL;
 ClassCompiler* currentClass = NULL;
@@ -96,8 +106,8 @@ static Chunk* currentChunk()
 }
 
 /// prints the error message and toggles the flag
-/// @param token - the offending token
-/// @param message - the error message
+/// @param token    the offending token
+/// @param message  the error message
 static void errorAt(Token* token, const char* message)
 {
     if (parser.panicMode) return;
@@ -158,8 +168,8 @@ static void advance()
 
 /// The function reads the next token, and checks if matches to the type that was received
 /// if not, reported the error
-/// @param type
-/// @param message
+/// @param type     the type that needs to be matched
+/// @param message  the error message
 static void consume(TokenType type, const char* message)
 {
     if (parser.current.type == type)
@@ -173,7 +183,7 @@ static void consume(TokenType type, const char* message)
 
 /// checks if the current token type in the parser is the same as the one given to the function
 /// @param type the type that needs comparing
-/// @return true is the type matches, false otherwise
+/// @return     true is the type matches, false otherwise
 static bool check(TokenType type)
 {
     return parser.current.type == type;
@@ -181,7 +191,7 @@ static bool check(TokenType type)
 
 /// matches a given type to the parser current type
 /// @param type the type that we want to match
-/// @return true is the match was successful and the token was consumed, false otherwise
+/// @return     true is the match was successful and the token was consumed, false otherwise
 static bool match(TokenType type)
 {
     if (!check(type)) return false;
@@ -190,15 +200,15 @@ static bool match(TokenType type)
 }
 
 /// appends the given instruction byte to the chunk with the relevant line
-/// @param byte - the byte that needs appending
+/// @param byte the byte that needs appending
 static void emitByte(uint8_t byte)
 {
     writeChunk(currentChunk(), byte, parser.previous.line);
 }
 
 /// a function that writes 2 bytes at once for ease of implementation
-/// @param byte1 - the opcode byte
-/// @param byte2 - the operand byte
+/// @param byte1 the opcode byte
+/// @param byte2 the operand byte
 static void emitBytes(uint8_t byte1, uint8_t byte2)
 {
     emitByte(byte1);
@@ -219,8 +229,8 @@ static void emitLoop(int loopStart)
 }
 
 /// the function emits a jump instruction to the bytecode with filler operands and returns the filler index
-/// @param instruction the jump instruction
-/// @return the index for the jump operands
+/// @param instruction  the jump instruction
+/// @return             the index for the jump operands
 static int emitJump(uint8_t instruction)
 {
     emitByte(instruction);
@@ -243,9 +253,9 @@ static void emitReturn()
     emitByte(OP_RETURN);
 }
 
-///
-/// @param value
-/// @return
+/// a function to emit the constant value to the chunk
+/// @param value the value that needs to be appended
+/// @return      the index of the constant in the chunk
 static uint32_t makeConstant(Value value)
 {
     int constant = addConstant(currentChunk(), value);
@@ -260,7 +270,7 @@ static uint32_t makeConstant(Value value)
 }
 
 /// emits the constant byteCode to the chunk using the writeConstant function because of extended functionality
-/// @param value - the value that needs appending
+/// @param value the value that needs appending
 static void emitConstant(Value value)
 {
     uint32_t constant = makeConstant(value);
@@ -372,14 +382,11 @@ static void endScope()
     }
 }
 
+// function prototypes for the recursive descent parser
 static void expression();
-
 static void statement();
-
 static void declaration();
-
 static ParseRule* getRule(TokenType type);
-
 static void parsePrecedence(Precedence precedence);
 
 /// converts the token value to a double that we can append to the bytecode chunk
@@ -389,8 +396,8 @@ static void number(bool canAssign)
     emitConstant(NUMBER_VAL(value));
 }
 
-/// a function for
-/// @param canAssign
+/// a function for the "or" operator
+/// @param canAssign a flag to check if the operator can be assigned
 static void or_(bool canAssign)
 {
     int elseJump = emitJump(OP_JUMP_IF_FALSE);
@@ -404,13 +411,14 @@ static void or_(bool canAssign)
 }
 
 /// emits the string bytecode
+/// @param canAssign a flag to check if the operator can be assigned
 static void string(bool canAssign)
 {
     emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
 }
 
 /// The function receives a precedence level and parses expressions that have an operator precedence
-/// //equals or higher than the provided one
+/// equals or higher than the provided one
 /// @param precedence the current precedence
 static void parsePrecedence(Precedence precedence)
 {
@@ -439,7 +447,7 @@ static void parsePrecedence(Precedence precedence)
 
 /// creates a constant from an identifier token
 /// @param name a pointer to a token that represents the identifier
-/// @return the index of the created constant
+/// @return     the index of the created constant
 static uint8_t identifierConstant(Token* name)
 {
     return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
@@ -464,9 +472,9 @@ static void addLocal(Token name)
 }
 
 /// the function gets to local variable tokens and compares them
-/// @param a the first local token
-/// @param b the second local token
-/// @return true if they're equal, false otherwise
+/// @param a    the first local token
+/// @param b    the second local token
+/// @return     true if they're equal, false otherwise
 static bool identifiersEqual(Token* a, Token* b)
 {
     if (a->length != b->length) return false;
@@ -475,8 +483,8 @@ static bool identifiersEqual(Token* a, Token* b)
 
 /// checks if a variable is a global or local one
 /// @param compiler the compiler with the local variables array
-/// @param name the name of the variable
-/// @return returns
+/// @param name     the name of the variable
+/// @return         returns the index of the local variable in the local pool
 static int resolveLocal(Compiler* compiler, Token* name)
 {
     for (int i = compiler->localCount - 1; i >= 0; i--)
@@ -496,10 +504,10 @@ static int resolveLocal(Compiler* compiler, Token* name)
     return -1;
 }
 
-///
-/// @param compiler
-/// @param index
-/// @param isLocal
+/// adds an upvalue to the upvalue array in the function
+/// @param compiler the compiler with the upvalue array
+/// @param index    the index of the upvalue
+/// @param isLocal  a flag to check if the upvalue is local
 /// @return returns the index of the upvalue in the upvalue array
 static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal)
 {
@@ -526,10 +534,10 @@ static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal)
     return compiler->function->upvalueCount++;
 }
 
-///
-/// @param compiler
-/// @param name
-/// @return
+/// resolves the upvalue in the function
+/// @param compiler the compiler with the upvalue array
+/// @param name     the name of the upvalue
+/// @return         the index of the upvalue in the upvalue array
 static int resolveUpvalue(Compiler* compiler, Token* name)
 {
     if (compiler->enclosing == NULL) return -1;
@@ -577,8 +585,8 @@ static void declareVariable()
 }
 
 /// a helper function to get or set a variable value
-/// @param name the name of a variable
-/// @param canAssign whether a value can be assigned to the variable
+/// @param name         the name of a variable
+/// @param canAssign    whether a value can be assigned to the variable
 static void namedVariable(Token name, bool canAssign)
 {
     //checks if the variable in question is a local or global variable and sets the opcodes accordingly
@@ -691,8 +699,8 @@ static void super_(bool canAssign)
     }
 }
 
-///
-/// @param canAssign
+/// a function to parse the 'this' keyword
+/// @param canAssign whether the variable can be assigned (non-relevant to this function)
 static void this_(bool canAssign)
 {
     if (currentClass == NULL)
@@ -706,7 +714,7 @@ static void this_(bool canAssign)
 
 /// parse a variable identifier from the token stream
 /// @param errorMessage the message we want to print if the identifier is not found
-/// @return the index of the constant in the constant table
+/// @return             the index of the constant in the constant table
 static uint8_t parseVariable(const char* errorMessage)
 {
     //consumes the identifier token
@@ -755,6 +763,7 @@ static void and_(bool canAssign)
 }
 
 /// handles the rest of the arithmetic operators. emits the byte code of the instruction
+/// @param canAssign a flag to check if the operator can be assigned (non-relevant)
 static void binary(bool canAssign)
 {
     TokenType operatorType = parser.previous.type;
@@ -798,8 +807,8 @@ static void binary(bool canAssign)
     }
 }
 
-///
-/// @param canAssign
+/// a function to handle the calling of functions
+/// @param canAssign a flag to check if the operator can be assigned (non-relevant)
 static void call(bool canAssign)
 {
     uint8_t argCount = argumentList();
@@ -831,6 +840,7 @@ static void dot(bool canAssign)
 }
 
 /// a function to load the bytecode for boolean and nil values
+/// @param canAssign a flag to check if the operator can be assigned (non-relevant)
 static void literal(bool canAssign)
 {
     switch (parser.previous.type)
@@ -905,7 +915,7 @@ static void function(FunctionType type)
     }
 }
 
-///
+/// a function to handle class methods
 static void method()
 {
     //consume and process the method name
@@ -927,7 +937,7 @@ static void method()
     emitBytes(OP_METHOD, constant);
 }
 
-///
+/// a function to handle the declaration of classes
 static void classDeclaration()
 {
     consume(TOKEN_IDENTIFIER, "Expect class name.");
@@ -1251,7 +1261,7 @@ static void statement()
 }
 
 /// evaluates the value in the expression and then negates it
-/// @param canAssign a boolean that determines whether a variable can be assigned (required for the Abstract function we use)
+/// @param canAssign a boolean that determines whether a variable can be assigned (non-relevant)
 static void unary(bool canAssign)
 {
     TokenType operatorType = parser.previous.type;
@@ -1274,12 +1284,14 @@ static void unary(bool canAssign)
 }
 
 /// call expression to compile what inside the parentheses, and then parse the closing
+/// @param canAssign a flag to check if the operator can be assigned (non-relevant)
 static void grouping(bool canAssign)
 {
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression.");
 }
 
+// the parse rules table with it's designated initializers
 ParseRule rules[] = {
     [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
@@ -1358,7 +1370,7 @@ ObjFunction* compile(const char* source)
     return parser.hadError ? NULL : function;
 }
 
-///
+/// a function to mark the compiler roots for the garbage collector
 void markCompilerRoots()
 {
     for (Compiler* compiler = current; compiler != NULL; compiler = compiler->enclosing)

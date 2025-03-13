@@ -206,6 +206,7 @@ static void freeObject(Obj* object)
     }
 }
 
+///
 static void markRoots()
 {
     //
@@ -236,6 +237,7 @@ static void markRoots()
     markObject((Obj*)vm.initString);
 }
 
+///
 static void traceReferences()
 {
     while (vm.grayCount > 0)
@@ -245,6 +247,7 @@ static void traceReferences()
     }
 }
 
+///
 static void sweep()
 {
     Obj* previous = NULL;
@@ -278,6 +281,7 @@ static void sweep()
     }
 }
 
+///
 void collectGarbage()
 {
     //GC logging

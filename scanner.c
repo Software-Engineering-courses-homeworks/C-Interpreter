@@ -5,6 +5,7 @@
 
 #include <ctype.h>
 
+/// the scanner struct that holds the source code and the current position in it
 typedef struct
 {
     const char* start;
@@ -12,6 +13,7 @@ typedef struct
     int line;
 } Scanner;
 
+/// the scanner
 Scanner scanner;
 
 /// the scanner gets a source code file and initializes the scanner to parse through it
@@ -24,7 +26,7 @@ void initScanner(const char* source)
 }
 
 /// the function determines whether the character given is a letter or an underscore to determine if it's an identifier
-/// @param c - a char that was scanned from the source code
+/// @param c      a char that was scanned from the source code
 /// @return TRUE: the character is a letter or an underscore, FALSE: else
 static bool isAlpha(char c)
 {
@@ -32,8 +34,8 @@ static bool isAlpha(char c)
 }
 
 /// the function gets a character and returns whether it's a digit or not
-/// @param c the current character in the lexeme
-/// @return TRUE - if c is a digit, FALSE - if C isn't a number
+/// @param c    the current character in the lexeme
+/// @return     TRUE: if c is a digit, FALSE: if C isn't a number
 static bool isDigit(char c)
 {
     return c >= '0' && c <= '9';
@@ -148,10 +150,10 @@ static void skipWhiteSpaces()
 }
 
 /// the function gets a lexeme from the scanner and checks if it's a keyword or an identifier and returns the appropriate token type
-/// @param start  - the start of the word
-/// @param length - the length of the keyword we want to compare the scanned word to
-/// @param rest - the rest of the keyword
-/// @param type - the type of the keyword, represented with it's TokenType
+/// @param start  the start of the word
+/// @param length the length of the keyword we want to compare the scanned word to
+/// @param rest   the rest of the keyword
+/// @param type   the type of the keyword, represented with it's TokenType
 /// @return returns the keyword token type or an identifier token type
 static TokenType checkKeyword(int start, int length, const char* rest, TokenType type)
 {
