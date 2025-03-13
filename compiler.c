@@ -110,25 +110,31 @@ static Chunk* currentChunk()
 /// @param message  the error message
 static void errorAt(Token* token, const char* message)
 {
+    //if the parser is in panic mode, don't report multipile errors.
     if (parser.panicMode) return;
 
+    //enable panic mode, prevents cascading error.
     parser.panicMode = true;
 
     fprintf(stderr, "[line %d].Error", token->line);
 
+    //if the error happend at the end of input, indicate that
     if (token->type == TOKEN_EOF)
     {
         fprintf(stderr, " at end");
     }
+    //if the token itself is an error, do nothing extra.
     else if (token->type == TOKEN_ERROR)
     {
         // Nothing.
     }
+    //else, print the token that caused the error
     else
     {
         fprintf(stderr, " at '%.*s'", token->length, token->start);
     }
 
+    //prints the actual error and mark that an error has occurred in the parser.
     fprintf(stderr, ": %s\n", message);
     parser.hadError = true;
 
@@ -221,7 +227,9 @@ static void emitLoop(int loopStart)
 {
     emitByte(OP_LOOP);
 
+    // Calculate the offset for the jump (distance back to loopStart).
     int offset = currentChunk()->count - loopStart + 2;
+    // Ensure the loop body isn't too large to fit in a 16-bit jump offset.
     if (offset > UINT16_MAX) error("Loop body too large");
 
     emitByte((offset >> 8) & 0xFF);
@@ -242,11 +250,12 @@ static int emitJump(uint8_t instruction)
 /// emits a return instruction to the bytecode
 static void emitReturn()
 {
+    // If the function is an initializer (constructor), return the instance itself.
     if (current->type == TYPE_INITIALIZER)
     {
         emitBytes(OP_GET_LOCAL, 0);
     }
-    else
+    else //else, returns default return value for functions without an explicit return.
     {
         emitByte(OP_NIL);
     }
@@ -293,13 +302,16 @@ static void emitConstant(Value value)
 /// @param offset the jump offset
 static void patchJump(int offset)
 {
+    // Calculate the jump distance (number of bytes to skip).
     int jump = currentChunk()->count - offset - 2;
 
+    // Ensures the jump offset fits within 16 bits
     if (jump > UINT16_MAX)
     {
         error("Too much code to jump over");
     }
 
+    // Store the jump offset in the bytecode at the given offset position.
     currentChunk()->code[offset] = (jump >> 8) & 0xff;
     currentChunk()->code[offset + 1] = jump & 0xff;
 }
@@ -308,12 +320,17 @@ static void patchJump(int offset)
 /// @param compiler the compiler scope and depth
 static void initCompiler(Compiler* compiler, FunctionType type)
 {
+    // Link this compiler to the enclosing (previous) compiler.
     compiler->enclosing = current;
+
+    // Initialize the function being compiled to NULL, then create a new function.
     compiler->function = NULL;
     compiler->type = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
     compiler->function = newFunction();
+
+    //set the current compiler to this one
     current = compiler;
 
     // if the function isn't the main function, copies it's parsed name.
@@ -322,15 +339,18 @@ static void initCompiler(Compiler* compiler, FunctionType type)
         current->function->name = copyString(parser.previous.start, parser.previous.length);
     }
 
+    // Reserve the first local variable slot for special use
     Local* local = &current->locals[current->localCount++];
     local->depth = 0;
     local->isCaptured = false;
 
+    // If this is a method or initializer, reserve the first local slot for 'this'.
     if (type != TYPE_FUNCTION)
     {
         local->name.start = "this";
         local->name.length = 4;
     }
+    //else, regular functions don’t use this slot, so leave it empty.
     else
     {
         local->name.start = "";
@@ -422,23 +442,36 @@ static void string(bool canAssign)
 /// @param precedence the current precedence
 static void parsePrecedence(Precedence precedence)
 {
+    // Advance to the next token
     advance();
+
+    // Get the prefix rule for the current token
     ParseFn prefixRule = getRule(parser.previous.type)->prefix;
+
+    // If there is no prefix rule, the token is not a valid start of an expression.
     if (prefixRule == NULL)
     {
         error("Expect expression.");
         return;
     }
+
+    // Determine whether assignment `=` is allowed in this context.
     bool canAssign = precedence <= PREC_ASSIGNMENT;
+
+    // Call the prefix rule function to parse the expression.
     prefixRule(canAssign);
 
+    // Continue parsing infix expressions while the next token has higher precedence.
     while (precedence <= getRule(parser.current.type)->precedence)
     {
-        advance();
+        advance(); // Move to the next token.
+        //Gets the infix rule of the token.
         ParseFn infixRule = getRule(parser.previous.type)->infix;
+        //call the infix rule function of the token.
         infixRule(canAssign);
     }
 
+    // If an assignment (`=`) appears where it’s not allowed, report an error.
     if (canAssign && match(TOKEN_EQUAL))
     {
         error("Invalid assignment target");
@@ -487,11 +520,15 @@ static bool identifiersEqual(Token* a, Token* b)
 /// @return         returns the index of the local variable in the local pool
 static int resolveLocal(Compiler* compiler, Token* name)
 {
+    // Iterate over the local variables in reverse
     for (int i = compiler->localCount - 1; i >= 0; i--)
     {
         Local* local = &compiler->locals[i];
+
+        // Checks if the given name matches the local variable.
         if (identifiersEqual(name, &local->name))
         {
+            // If the variable is declared but not yet initialized, report an error.
             if (local->depth == -1)
             {
                 error("Can't read local variable in its own initializer");
@@ -513,10 +550,12 @@ static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal)
 {
     int upvalueCount = compiler->function->upvalueCount;
 
+    //// Iterates and checks if the upvalue already exists to avoid duplicates.
     for (int i = 0; i < upvalueCount; i++)
     {
         Upvalue* upvalue = &compiler->upvalues[i];
 
+        // If an upvalue with the same index and locality exists, return its index.
         if (upvalue->index == index && upvalue->isLocal == isLocal)
         {
             return i;
@@ -529,6 +568,7 @@ static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal)
         return 0;
     }
 
+    // Add a new upvalue entry and returns the new upvalue index
     compiler->upvalues[upvalueCount].isLocal = isLocal;
     compiler->upvalues[upvalueCount].index = index;
     return compiler->function->upvalueCount++;
@@ -540,21 +580,29 @@ static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal)
 /// @return         the index of the upvalue in the upvalue array
 static int resolveUpvalue(Compiler* compiler, Token* name)
 {
+    // If there is no enclosing function, the variable is not an upvalue.
     if (compiler->enclosing == NULL) return -1;
 
+    // Try to resolve the variable in the enclosing function's local scope.
     int local = resolveLocal(compiler->enclosing, name);
+
+
     if (local != -1)
     {
+        // Mark the local variable as captured.
         compiler->enclosing->locals[local].isCaptured = true;
+        // Store and return the upvalue index in the current function.
         return addUpvalue(compiler, (uint8_t)local, true);
     }
 
+    // If not found as a local, check if it's already an upvalue in the enclosing function.
     int upvalue = resolveUpvalue(compiler->enclosing, name);
+
     if (upvalue != -1)
     {
         return addUpvalue(compiler, (uint8_t)upvalue, false);
     }
-
+    // If the variable isn't found in the enclosing function, it's not an upvalue.
     return -1;
 }
 
@@ -591,17 +639,21 @@ static void namedVariable(Token name, bool canAssign)
 {
     //checks if the variable in question is a local or global variable and sets the opcodes accordingly
     uint8_t getOp, setOp;
+
+    // Check if the variable is a local variable.
     int arg = resolveLocal(current, &name);
     if (arg != -1)
     {
         getOp = OP_GET_LOCAL;
         setOp = OP_SET_LOCAL;
     }
+    // If not local, check if it's an upvalue.
     else if ((arg = resolveUpvalue(current, &name)) != -1)
     {
         getOp = OP_GET_UPVALUE;
         setOp = OP_SET_UPVALUE;
     }
+    // If not found locally or as an upvalue, assume it's a global variable.
     else
     {
         arg = identifierConstant(&name);
@@ -820,19 +872,24 @@ static void call(bool canAssign)
 static void dot(bool canAssign)
 {
     consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
+
+    // Get the constant index for the property name to use in bytecode.
     uint8_t name = identifierConstant(&parser.previous);
 
+    // If assignment is allowed and an '=' token follows, handle the property assignment.
     if (canAssign && match(TOKEN_EQUAL))
     {
         expression();
         emitBytes(OP_SET_PROPERTY, name);
     }
+    // If the next token is a left parenthesis, then it is a function call
     else if (match(TOKEN_LEFT_PAREN))
     {
         uint8_t argCount = argumentList();
         emitBytes(OP_INVOKE, name);
         emitByte(argCount);
     }
+    // If neither assignment nor function call, it's a property access.
     else
     {
         emitBytes(OP_GET_PROPERTY, name);
@@ -882,32 +939,42 @@ static void block()
 /// @param type the type of the function
 static void function(FunctionType type)
 {
+    // Initialize a new compiler for this function.
     Compiler compiler;
     initCompiler(&compiler, type);
     beginScope();
 
     consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
+
+    // If there are parameters, parse them; otherwise, continue.
     if (!check(TOKEN_RIGHT_PAREN))
     {
         do
         {
             current->function->arity++;
+            // If there are more than 255 parameters, show an error.
             if (current->function->arity > 255)
             {
                 errorAtCurrent("Can't have more than 255 parameters.");
             }
+
+            // Parse the parameter name as a variable and define it.
             uint8_t constant = parseVariable("Expect parameter name.");
             defineVariable(constant);
         }
-        while (match(TOKEN_COMMA));
+        while (match(TOKEN_COMMA)); // Allow multiple parameters separated by commas.
     }
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after function parameters.");
     consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
+
+    // Parse the function body as a block of statements.
     block();
 
+    // Finalize the function and create an ObjFunction object.
     ObjFunction* function = endCompiler();
     emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
 
+    // Iterates and emits bytecode for each upvalue (captured variable) in the function.
     for (int i = 0; i < function->upvalueCount; i++)
     {
         emitByte(compiler.upvalues[i].isLocal ? 1 : 0);
@@ -1139,6 +1206,7 @@ static void printStatement()
 /// compiles the return statement
 static void returnStatement()
 {
+    // If we are at the top level (not inside a function), returning is not allowed.
     if (current->type == TYPE_SCRIPT)
     {
         error("Can't return from top-level code.");
