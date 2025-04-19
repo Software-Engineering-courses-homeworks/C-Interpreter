@@ -1,4 +1,0 @@
-C:\Users\test\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -G "MinGW Makefiles" -S C:\Users\test\CLionProjects\C-Interpreter -B C:\Users\test\CLionProjects\C-Interpreter\cmake-build-debug
--- Configuring done (0.2s)
--- Generating done (0.0s)
--- Build files have been written to: C:/Users/test/CLionProjects/C-Interpreter/cmake-build-debug
