@@ -21,6 +21,13 @@ void initScanner(const char* source) {
     scanner.line = 1;
 }
 
+/// the function determines whether the character given is a letter or an underscore to determine if it's an identifier
+/// @param c - a char that was scanned from the source code
+/// @return TRUE: the character is a letter or an underscore, FALSE: else
+static bool isAlpha(char c) {
+    return (c >= 'a' && c <='z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
+
 /// the function gets a character and returns whether it's a digit or not
 /// @param c the current character in the lexeme
 /// @return TRUE - if c is a digit, FALSE - if C isn't a number
@@ -121,6 +128,63 @@ static void skipWhiteSpaces() {
                 return;
         }
     }
+}
+/// the function gets a lexeme from the scanner and checks if it's a keyword or an identifier and returns the approproate token type
+/// @param start  - the start of the word
+/// @param length - the length of the keyword we want to compare the scanned word to
+/// @param rest - the rest of the keyword
+/// @param type - the type of the keyword, represented with it's TokenType
+/// @return returns the keyword token type or an identifier token type
+static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
+    if(scanner.current - scanner.start == start + length && memcmp(scanner.start + start, rest, length) == 0) {
+        return type;
+    }
+    return TOKEN_IDENTIFIER;
+}
+
+
+/// The function returns a token type, if it's a saved keyword
+/// then a specific token will be returned. if it's not so an identifier token will be returned
+/// @return a token type for a saved keyword or TOKEN_IDENTIFIER for ones that are not
+static TokenType identifierType() {
+    switch(scanner.current[0]) {
+        case 'a': return checkKeyword(1,2,"nd",TOKEN_AND);
+        case 'c': return checkKeyword(1,4,"lass",TOKEN_CLASS);
+        case 'e': return checkKeyword(1,3,"lse",TOKEN_ELSE);
+        case 'i': return checkKeyword(1,1,"f",TOKEN_IF);
+        case 'n': return checkKeyword(1,2,"il",TOKEN_NIL);
+        case 'o': return checkKeyword(1,1,"r",TOKEN_OR);
+        case 'p': return checkKeyword(1,4,"rint",TOKEN_PRINT);
+        case 'r': return checkKeyword(1,5,"eturn",TOKEN_RETURN);
+        case 's': return checkKeyword(1,4,"uper",TOKEN_SUPER);
+        case 't:
+            if (scanner.current - scanner.start > 1) {
+                switch(scanner.current[1]) {
+                    case 'h': return checkKeyword(2,2,"is",TOKEN_THIS);
+                    case 'r': return checkKeyword(2,2,"ue",TOKEN_TRUE);
+                }
+            }
+            break;
+        case 'v': return checkKeyword(1,2,"ar",TOKEN_VAR);
+        case 'w': return checkKeyword(1,4,"hile",TOKEN_WHILE);
+        case 'f':
+            if(scanner.current - scanner.start > 1) {
+                switch(scanner.current[1]) {
+                    case 'a': return checkKeyword(2,3,"lse",TOKEN_FALSE);
+                    case 'o': return checkKeyword(2,1,"r",TOKEN_FOR);
+                    case 'u': return checkKeyword(2,1,"n",TOKEN_FUN);
+                }
+            }
+            break;
+    }
+    return TOKEN_IDENTIFIER;
+}
+
+/// The function creates a token for identifier that includes numbers,letters and underscore
+/// @return a new token for identifier
+static Token identifier() {
+    while(isAlpha(peek()) || isDigit(peek()))advance();
+    return makeToken(identifierType());
 }
 
 /// the function makes a new token for the next number that appears
