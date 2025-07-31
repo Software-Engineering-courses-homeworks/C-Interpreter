@@ -2,6 +2,7 @@
 build/
 cmake-build-debug/
 build_linux/
+build_linux_debug/
 
 # ignores the build directories while we are working on the project
 .vscode/
