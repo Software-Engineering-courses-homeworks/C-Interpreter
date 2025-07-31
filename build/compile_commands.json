@@ -1,0 +1,62 @@
+[
+{
+  "directory": "C:/Users/test/CLionProjects/C-Interpreter/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe  @CMakeFiles/clox.dir/includes_C.rsp -g -std=gnu11 -o CMakeFiles\\clox.dir\\chunk.c.obj -c C:\\Users\\test\\CLionProjects\\C-Interpreter\\chunk.c",
+  "file": "C:/Users/test/CLionProjects/C-Interpreter/chunk.c",
+  "output": "CMakeFiles/clox.dir/chunk.c.obj"
+},
+{
+  "directory": "C:/Users/test/CLionProjects/C-Interpreter/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe  @CMakeFiles/clox.dir/includes_C.rsp -g -std=gnu11 -o CMakeFiles\\clox.dir\\debug.c.obj -c C:\\Users\\test\\CLionProjects\\C-Interpreter\\debug.c",
+  "file": "C:/Users/test/CLionProjects/C-Interpreter/debug.c",
+  "output": "CMakeFiles/clox.dir/debug.c.obj"
+},
+{
+  "directory": "C:/Users/test/CLionProjects/C-Interpreter/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe  @CMakeFiles/clox.dir/includes_C.rsp -g -std=gnu11 -o CMakeFiles\\clox.dir\\main.c.obj -c C:\\Users\\test\\CLionProjects\\C-Interpreter\\main.c",
+  "file": "C:/Users/test/CLionProjects/C-Interpreter/main.c",
+  "output": "CMakeFiles/clox.dir/main.c.obj"
+},
+{
+  "directory": "C:/Users/test/CLionProjects/C-Interpreter/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe  @CMakeFiles/clox.dir/includes_C.rsp -g -std=gnu11 -o CMakeFiles\\clox.dir\\memory.c.obj -c C:\\Users\\test\\CLionProjects\\C-Interpreter\\memory.c",
+  "file": "C:/Users/test/CLionProjects/C-Interpreter/memory.c",
+  "output": "CMakeFiles/clox.dir/memory.c.obj"
+},
+{
+  "directory": "C:/Users/test/CLionProjects/C-Interpreter/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe  @CMakeFiles/clox.dir/includes_C.rsp -g -std=gnu11 -o CMakeFiles\\clox.dir\\value.c.obj -c C:\\Users\\test\\CLionProjects\\C-Interpreter\\value.c",
+  "file": "C:/Users/test/CLionProjects/C-Interpreter/value.c",
+  "output": "CMakeFiles/clox.dir/value.c.obj"
+},
+{
+  "directory": "C:/Users/test/CLionProjects/C-Interpreter/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe  @CMakeFiles/clox.dir/includes_C.rsp -g -std=gnu11 -o CMakeFiles\\clox.dir\\vm.c.obj -c C:\\Users\\test\\CLionProjects\\C-Interpreter\\vm.c",
+  "file": "C:/Users/test/CLionProjects/C-Interpreter/vm.c",
+  "output": "CMakeFiles/clox.dir/vm.c.obj"
+},
+{
+  "directory": "C:/Users/test/CLionProjects/C-Interpreter/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe  @CMakeFiles/clox.dir/includes_C.rsp -g -std=gnu11 -o CMakeFiles\\clox.dir\\compiler.c.obj -c C:\\Users\\test\\CLionProjects\\C-Interpreter\\compiler.c",
+  "file": "C:/Users/test/CLionProjects/C-Interpreter/compiler.c",
+  "output": "CMakeFiles/clox.dir/compiler.c.obj"
+},
+{
+  "directory": "C:/Users/test/CLionProjects/C-Interpreter/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe  @CMakeFiles/clox.dir/includes_C.rsp -g -std=gnu11 -o CMakeFiles\\clox.dir\\scanner.c.obj -c C:\\Users\\test\\CLionProjects\\C-Interpreter\\scanner.c",
+  "file": "C:/Users/test/CLionProjects/C-Interpreter/scanner.c",
+  "output": "CMakeFiles/clox.dir/scanner.c.obj"
+},
+{
+  "directory": "C:/Users/test/CLionProjects/C-Interpreter/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe  @CMakeFiles/clox.dir/includes_C.rsp -g -std=gnu11 -o CMakeFiles\\clox.dir\\object.c.obj -c C:\\Users\\test\\CLionProjects\\C-Interpreter\\object.c",
+  "file": "C:/Users/test/CLionProjects/C-Interpreter/object.c",
+  "output": "CMakeFiles/clox.dir/object.c.obj"
+},
+{
+  "directory": "C:/Users/test/CLionProjects/C-Interpreter/build",
+  "command": "C:\\msys64\\mingw64\\bin\\gcc.exe  @CMakeFiles/clox.dir/includes_C.rsp -g -std=gnu11 -o CMakeFiles\\clox.dir\\table.c.obj -c C:\\Users\\test\\CLionProjects\\C-Interpreter\\table.c",
+  "file": "C:/Users/test/CLionProjects/C-Interpreter/table.c",
+  "output": "CMakeFiles/clox.dir/table.c.obj"
+}
+]
