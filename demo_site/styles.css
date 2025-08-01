@@ -95,7 +95,7 @@ h1 {
 .main-content {
     display: flex;
     gap: 3vw;
-    align-items: flex-start;
+    align-items: stretch;
     flex: 1;
     min-height: 0;
 }
@@ -121,6 +121,7 @@ h1 {
     display: flex;
     flex-direction: column;
     flex: 1;
+    min-height: 0;
 }
 
 label {
@@ -145,7 +146,8 @@ label {
     background-color: var(--input-bg);
     color: var(--text-color);
     transition: all 0.3s ease;
-    min-height: 67.5vh;
+    min-height: 0;
+    max-height: none;
 }
 
 #codeInput:focus {
@@ -158,6 +160,7 @@ label {
     display: flex;
     gap: 2vw;
     margin: 2vh 0;
+    flex-shrink: 0;
 }
 
 .btn {
@@ -217,8 +220,8 @@ label {
     overflow-y: auto;
     overflow-x: hidden;
     transition: all 0.3s ease;
-    min-height: 30vh;
-    max-height: 60vh;
+    min-height: 0;
+    max-height: none;
 }
 
 .output-label {
