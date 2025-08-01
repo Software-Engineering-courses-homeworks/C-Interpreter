@@ -3,7 +3,7 @@ build/
 cmake-build-debug/
 build_linux/
 build_linux_debug/
-
+demo_site/backend.py
 # ignores the build directories while we are working on the project
 .vscode/
 .idea/

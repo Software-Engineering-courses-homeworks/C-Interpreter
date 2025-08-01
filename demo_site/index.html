@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Interpreter Demo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>C Interpreter Demo</h1>
+            <button type="button" class="theme-toggle" id="themeToggle">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+
+        <div class="main-content">
+            <div class="form-section">
+                <form id="interpreterForm">
+                    <div class="form-group">
+                        <label for="codeInput">Enter your C code:</label>
+                        <textarea id="codeInput" name="code"
+                            placeholder="Enter your C code here...&#10;&#10;Example:&#10;var a = 5;&#10;var b = 10;&#10;print a + b;"></textarea>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-primary" id="runBtn">
+                            Run Code
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="compileBtn">
+                            Run Debug
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="output-section">
+                <div class="form-group">
+                    <label for="output" class="output-label">Output:</label>
+                    <div id="output"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="logic.js"></script>
+</body>
+
+</html>
