@@ -7,7 +7,7 @@ const themeToggle = document.getElementById('themeToggle');
 const themeIcon = document.querySelector('.theme-icon');
 
 // Theme management
-let isDarkMode = localStorage.getItem('darkMode') === 'true';
+let isDarkMode = localStorage.getItem('darkMode') !== 'false';
 
 function updateTheme() {
     if (isDarkMode) {
@@ -36,7 +36,7 @@ function displayOutput(text, isError = false) {
 }
 
 // Function to handle code execution
-function handleExecution(mode) {
+async function handleExecution(mode) {
     const code = codeInput.value.trim();
 
     if (!code) {
@@ -50,29 +50,103 @@ function handleExecution(mode) {
 
     displayOutput('Processing...');
 
-    // Simulate processing (replace this with actual interpreter call)
-    setTimeout(() => {
-        if (mode === 'run') {
-            displayOutput(`Running code:\n${code}\n\n[This is a demo - integrate with your C interpreter here]`);
-        } else {
-            displayOutput(`Compiling code:\n${code}\n\n[This is a demo - integrate with your C compiler here]`);
+    try {
+        // Prepare JSON payload
+        const payload = {
+            code: code,
+            debug: mode === 'run_debug' // Use debug mode for compile button
+        };
+
+        // Send POST request to backend
+        const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+        const response = await fetch(`${backendUrl}/execute-code/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
+        const result = await response.json();
+
+        // Display the result
+        if (result.success) {
+            displayOutput(result.output || 'Code executed successfully.');
+        } else {
+            displayOutput(result.error || 'An error occurred during execution.', true);
+        }
+
+    } catch (error) {
+        console.error('Error calling interpreter:', error);
+        displayOutput(`Network error: ${error.message}`, true);
+    } finally {
         // Re-enable buttons
         runBtn.disabled = false;
         compileBtn.disabled = false;
-    }, 1000);
+    }
 }
 
 // Event listeners
 runBtn.addEventListener('click', () => handleExecution('run'));
-compileBtn.addEventListener('click', () => handleExecution('compile'));
+compileBtn.addEventListener('click', () => handleExecution('run_debug'));
 
 // Allow Ctrl+Enter to run code
 codeInput.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.key === 'Enter') {
         e.preventDefault();
         handleExecution('run');
+    }
+});
+
+// Drag and drop functionality
+codeInput.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    codeInput.style.backgroundColor = 'var(--accent-color)';
+    codeInput.style.opacity = '0.7';
+});
+
+codeInput.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    codeInput.style.backgroundColor = 'var(--input-bg)';
+    codeInput.style.opacity = '1';
+});
+
+codeInput.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Reset styles
+    codeInput.style.backgroundColor = 'var(--input-bg)';
+    codeInput.style.opacity = '1';
+    
+    const files = e.dataTransfer.files;
+    
+    if (files.length > 0) {
+        const file = files[0];
+        
+        // Check if it's a text file
+        if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+            const reader = new FileReader();
+            
+            reader.onload = (event) => {
+                codeInput.value = event.target.result;
+                displayOutput('File loaded successfully! You can now run the code.');
+            };
+            
+            reader.onerror = () => {
+                displayOutput('Error reading file. Please try again.', true);
+            };
+            
+            reader.readAsText(file);
+        } else {
+            displayOutput('Please drop a text file (.txt).', true);
+        }
     }
 });
 

@@ -31,6 +31,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Replace backend URL
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_URL }}
+        run: |
+          sed -i "s|process.env.BACKEND_URL|'$BACKEND_URL'|g" demo_site/logic.js
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
