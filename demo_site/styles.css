@@ -145,7 +145,7 @@ label {
     background-color: var(--input-bg);
     color: var(--text-color);
     transition: all 0.3s ease;
-    min-height: 30vh;
+    min-height: 67.5vh;
 }
 
 #codeInput:focus {
@@ -280,7 +280,7 @@ label {
     }
     
     #codeInput {
-        min-height: 25vh;
+        min-height: 35vh;
         font-size: 1.8vh;
     }
     
