@@ -12,9 +12,14 @@
     <div class="container">
         <div class="header">
             <h1>CLox Demo</h1>
-            <button type="button" class="theme-toggle" id="themeToggle">
-                <span class="theme-icon">☀️</span>
-            </button>
+            <div class="header-buttons">
+                <button type="button" class="help-toggle" id="helpToggle">
+                    <span class="help-icon">?</span>
+                </button>
+                <button type="button" class="theme-toggle" id="themeToggle">
+                    <span class="theme-icon">☀️</span>
+                </button>
+            </div>
         </div>
 
         <div class="main-content">
@@ -40,6 +45,41 @@
                     <label for="output" class="output-label">Output:</label>
                     <div id="output"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Lox Language Syntax Guide</h2>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <h3>Variables</h3>
+                <code>var name = "value";<br>var number = 42;</code>
+                
+                <h3>Arithmetic</h3>
+                <code>var result = 5 + 3 * 2;<br>var division = 10 / 2;</code>
+                
+                <h3>Print Statement</h3>
+                <code>print "Hello, World!";<br>print variable_name;</code>
+                
+                <h3>Control Flow</h3>
+                <code>if (condition) {<br>&nbsp;&nbsp;print "true";<br>} else {<br>&nbsp;&nbsp;print "false";<br>}</code>
+                
+                <h3>Loops</h3>
+                <code>for (var i = 0; i &lt; 10; i = i + 1) {<br>&nbsp;&nbsp;print i;<br>}<br><br>while (condition) {<br>&nbsp;&nbsp;// do something<br>}</code>
+                
+                <h3>Functions</h3>
+                <code>fun greet(name) {<br>&nbsp;&nbsp;print "Hello, " + name + "!";<br>}<br><br>greet("Alice");</code>
+                
+                <h3>Comments</h3>
+                <code>// This is a single-line comment</code>
+                
+                <h3>Example Program</h3>
+                <code>var a = 5;<br>var b = 10;<br>print "Sum: " + (a + b);<br><br>fun fibonacci(n) {<br>&nbsp;&nbsp;if (n &lt;= 1) return n;<br>&nbsp;&nbsp;return fibonacci(n - 1) + fibonacci(n - 2);<br>}<br><br>print fibonacci(8);</code>
             </div>
         </div>
     </div>

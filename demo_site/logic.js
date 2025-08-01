@@ -5,6 +5,9 @@ const compileBtn = document.getElementById('compileBtn');
 const output = document.getElementById('output');
 const themeToggle = document.getElementById('themeToggle');
 const themeIcon = document.querySelector('.theme-icon');
+const helpToggle = document.getElementById('helpToggle');
+const helpModal = document.getElementById('helpModal');
+const closeModal = document.getElementById('closeModal');
 
 // Theme management
 let isDarkMode = localStorage.getItem('darkMode') !== 'false';
@@ -27,6 +30,29 @@ updateTheme();
 themeToggle.addEventListener('click', () => {
     isDarkMode = !isDarkMode;
     updateTheme();
+});
+
+// Help modal functionality
+helpToggle.addEventListener('click', () => {
+    helpModal.style.display = 'block';
+});
+
+closeModal.addEventListener('click', () => {
+    helpModal.style.display = 'none';
+});
+
+// Close modal when clicking outside of it
+window.addEventListener('click', (event) => {
+    if (event.target === helpModal) {
+        helpModal.style.display = 'none';
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && helpModal.style.display === 'block') {
+        helpModal.style.display = 'none';
+    }
 });
 
 // Function to display output
