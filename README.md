@@ -60,6 +60,18 @@ cmake --build .
 
 ## Usage
 
+### Web Demo
+🌐 **[Try the live demo here!](https://software-engineering-courses-homeworks.github.io/C-Interpreter/)**
+
+The web interface provides an easy way to test the interpreter without building from source:
+- **Code Editor**: Write or paste your code with syntax highlighting
+- **Drag & Drop**: Drop `.txt`, `.c`, or `.h` files directly into the editor
+- **Dual Execution Modes**: 
+  - **Run Code**: Execute in normal mode
+  - **Run Debug**: Execute with debug output and tracing
+- **Dark/Light Theme**: Toggle between themes with persistent settings
+- **Real-time Output**: See execution results and error messages instantly
+
 ### Interactive Mode (REPL)
 ```bash
 ./C_Interpeter
