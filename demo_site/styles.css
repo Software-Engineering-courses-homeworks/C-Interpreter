@@ -213,9 +213,12 @@ label {
     box-sizing: border-box;
     resize: none;
     white-space: pre-wrap;
+    word-wrap: break-word;
     overflow-y: auto;
+    overflow-x: hidden;
     transition: all 0.3s ease;
     min-height: 30vh;
+    max-height: 60vh;
 }
 
 .output-label {
