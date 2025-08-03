@@ -178,3 +178,4 @@ codeInput.addEventListener('drop', (e) => {
 
 // Initial message
 displayOutput('Enter your code above and click "Run Code" or "Run Debug" to see the results here.');
+console.log("hello inspector!");
