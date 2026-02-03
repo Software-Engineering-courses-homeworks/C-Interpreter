@@ -84,7 +84,7 @@ async function handleExecution(mode) {
         };
 
         // Send POST request to backend
-        const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+        const backendUrl = 'https://cloxdemo-new.duckdns.org/execute-code';
         const response = await fetch(`${backendUrl}`, {
             method: 'POST',
             headers: {
